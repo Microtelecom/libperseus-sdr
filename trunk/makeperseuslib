@@ -1,0 +1,19 @@
+# Perseus SDR Library creation
+# libperseus-sdr
+#
+gcc -fPIC -g -c -Wall perseus-sdr.c
+gcc -fPIC -g -c -Wall perseuserr.c
+gcc -fPIC -g -c -Wall perseusfx2.c
+gcc -fPIC -g -c -Wall perseus-in.c
+
+gcc -shared -Wl,-soname,libperseus-sdr.so -lusb-1.0 \
+    -o libperseus-sdr.so.1.0.1 perseus-sdr.o perseuserr.o perseusfx2.o perseus-in.o -lc
+
+rm *.o
+
+# dopo aver compilato copiare in /usr/lib e configurare con ldconfig 
+# (se nuova versione) come in comandi seguenti:
+#
+# sudo cp libperseus-sdr.so.1.0.1 /usr/lib
+# sudo ldconfig -n /usr/lib
+#
