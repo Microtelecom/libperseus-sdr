@@ -28,7 +28,7 @@
 
 /* TODO:
 
-- Verify that control functions are thread safe (no mutex used yet(
+- Verify that control functions are thread safe (no mutex used yet)
 
 */
 
