@@ -1,0 +1,4 @@
+# Perseus Receiver Library
+# Test program compilation 
+
+gcc -operseustest -lperseus-sdr perseustest.c
