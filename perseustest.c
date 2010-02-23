@@ -139,7 +139,7 @@ int main(int argc, char **argv)
 	for (k=0;k<10;k++) {
 		fprintf(stderr, ".");
 		sleep(1);
-		}
+	}
 
 	fprintf(stderr, "\ndone\n");
 	

@@ -22,7 +22,7 @@ AC_CHECK_LIB([usb-1.0], [libusb_init], [],
               echo "Error! You need to have libusb-1.0 around."
               exit -1
              ])
-
+AC_CHECK_LIB([dl], [dlopen])
 
 
 # Checks for header files.
