@@ -27,6 +27,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <limits.h>
+#define __USE_GNU
+#include <dlfcn.h>
 
 #include "perseus-sdr.h"
 #include "perseuserr.h"
@@ -39,6 +43,10 @@ static perseus_descr	perseus_list[PERSEUS_MAX_DESCR];
 static int				perseus_list_entries 	= 0;
 static pthread_t		poll_libusb_thread 		= 0;
 static int				poll_libusb_thread_stop = FALSE;
+
+static char myPath[PATH_MAX+1] = {0};
+static char appPath[PATH_MAX+1] = {0};
+static char appName[PATH_MAX+1] = {0}; 
 
 // local function decl -----------------------------------------------
 
@@ -60,6 +68,28 @@ int	perseus_init(void)
 	libusb_device *device;
 
 	dbgprintf(3,"perseus_init()");
+
+    // try to detect the directory from which the library has been loaded
+	{
+		Dl_info info;
+
+		if (dladdr( &perseus_init, &info ) != 0) {
+			char *pos;
+			dbgprintf(3,"************** %s", info.dli_fname); 
+
+			strcpy (myPath, info.dli_fname);
+			pos = strrchr (myPath, '/');
+
+			if (pos) {
+				*pos = '\0';
+				strcpy (appPath, myPath);
+				appPath[strlen(myPath)] = '/';
+				strcpy (appName, pos+1);
+			}
+
+			dbgprintf(3,"path: %s name: %s", appPath, appName);
+		}
+	}
 
 	libusb_init(NULL);
 //	libusb_set_debug(NULL, 3);
@@ -348,8 +378,12 @@ int	perseus_fpga_config(perseus_descr *descr, char *fname)
 {
 	int  rc;
 	FILE *fbitstream;
+	char fileName[PATH_MAX+1] = {0}; 
 
-	dbgprintf(3,"perseus_fpga_config(0x%08X,%s)",(int32_t)descr, fname);
+	strcpy (fileName, appPath);
+	strcat (fileName, fname);
+
+	dbgprintf(3,"perseus_fpga_config(0x%08X,%s)",(int32_t)descr, fileName);
 
 	if (descr==NULL)
 		return errorset(PERSEUS_NULLDESCR, "null descriptor");
@@ -360,9 +394,9 @@ int	perseus_fpga_config(perseus_descr *descr, char *fname)
 	if (descr->firmware_downloaded==FALSE)
 		return errorset(PERSEUS_FWNOTLOADED, "firmware not loaded");
 
-	fbitstream = fopen(fname, "rb");
+	fbitstream = fopen(fileName, "rb");
 	if (fbitstream==NULL) 
-		return errorset(PERSEUS_FILENOTFOUND, "file %s not found",fname);
+		return errorset(PERSEUS_FILENOTFOUND, "file %s not found", fileName);
 
 	descr->fpga_configured  	= FALSE;
 
