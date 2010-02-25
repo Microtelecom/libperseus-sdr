@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>       // needed for sleep()
 #include "perseus-sdr.h"
 
 /* TODO:
@@ -207,4 +208,5 @@ int user_data_callback(void *buf, int buf_size, void *extra)
 
 		fwrite(&s.iq, 1, sizeof(iq_sample), fout);
 		}
+    return 0;
 }

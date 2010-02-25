@@ -44,7 +44,7 @@ int  perseus_input_queue_create(
 					perseus_input_callback callback_fn, 
 					void *callback_extra)
 {
-	int k,j,rc;
+	int k,j;
 	perseus_input_transfer *transfer_queue;
 	char *transfer_buf;
 	
@@ -83,7 +83,7 @@ int  perseus_input_queue_create(
 		libusb_fill_bulk_transfer(transfer_queue[k].transfer, 
 									handle,
 									PERSEUS_EP_DATAIN,
-									transfer_buf,
+									(unsigned char*)transfer_buf,
 									transfer_buf_size,
 									input_queue_callback,
 									&transfer_queue[k],
@@ -186,8 +186,6 @@ int  perseus_input_queue_free(perseus_input_queue *queue)
 
 static void input_queue_callback(struct libusb_transfer *transfer)
 {
-	int rc;
-
 	perseus_input_transfer *input_transfer = (perseus_input_transfer *)transfer->user_data;
 	perseus_input_queue_ptr input_queue    = input_transfer->queue;
 

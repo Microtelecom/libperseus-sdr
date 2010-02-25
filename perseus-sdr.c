@@ -110,17 +110,18 @@ int	perseus_init(void)
 					descr.idProduct,
 					perseus_list[num_perseus].bus,
 					perseus_list[num_perseus].devaddr);
-		if (descr.idVendor==PERSEUS_VID) 
+		if (descr.idVendor==PERSEUS_VID) {
 			if (descr.idProduct==PERSEUS_PID_BLANKEEPROM) {
 				perseus_list[num_perseus].is_cypress_ezusb = TRUE;
 				libusb_ref_device(device);
 				num_perseus++;
-				}
-			else
+				} 
+            else
 			if (descr.idProduct==PERSEUS_PID) {
 				libusb_ref_device(device);
 				num_perseus++;
 				}
+        }
 		if (num_perseus==PERSEUS_MAX_DESCR)
 			break;
 		}
@@ -132,7 +133,7 @@ int	perseus_init(void)
 	// start the libusb polling thread
 	if (poll_libusb_thread == 0) {
 		poll_libusb_thread_stop = FALSE;
-		if (rc=pthread_create(&poll_libusb_thread, NULL, &poll_libusb_thread_fn, NULL)!=0) {
+		if ((rc=pthread_create(&poll_libusb_thread, NULL, &poll_libusb_thread_fn, NULL))!=0) {
 			return errorset(PERSEUS_CANTCREAT, "can't create poll libusb thread");
 			}
 		}
@@ -636,7 +637,7 @@ int	perseus_stop_async_input(perseus_descr *descr)
 
 static void *poll_libusb_thread_fn(void *pparams)
 {
-	int maxpri, minpri,rc;
+	int maxpri, rc;
 
 	dbgprintf(3,"poll libusb thread started...");
 
@@ -658,4 +659,6 @@ static void *poll_libusb_thread_fn(void *pparams)
 		libusb_handle_events(NULL);
 
 	dbgprintf(3,"poll libusb thread terminating...");
+
+    return 0;
 }
