@@ -1,0 +1,106 @@
+#
+# Perseus SDR
+#
+# GNU autoconf/automake package
+#
+# Andrea Montefusco IW0HDV (andrew at montefusco dot com)
+#
+
+#
+# Install compiler and tools (Debian and derived distributions, e.g. Ubuntu)
+#
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install gcc g++ make manpages-dev autoconf automake subversion
+#
+# Install the prerequisite library
+#
+sudo apt-get install libusb-1.0-0-dev
+
+#
+# Fedora Core 11
+#
+# Get root status with the method you prefer, for example
+
+su - root
+
+# next install the prerequisite packages:
+
+yum update
+yum install gcc gcc-c++ man-pages autoconf automake subversion
+yum install libusb1 libusb1-devel
+
+#
+# Mandriva 2010
+#
+# Get root status with the method you prefer, for example
+
+su - root
+
+# next install the prerequisite packages:
+
+urpmi gcc gcc-c++ man-pages autoconf automake subversion make
+urpmi -a libusb1
+
+
+#
+# download, compile and install the Perseus library
+#
+cd 
+svn checkout http://libperseus-sdr.googlecode.com/svn/trunk/ libperseus-sdr
+cd libperseus-sdr
+./configure && make
+sudo make install
+sudo ldconfig
+
+# back to home directory
+cd
+
+#
+# test the library
+# note: the outputs shown below is in case the Perseus hardware is not linnked or turned off
+#
+perseustest_dyn
+perseus: perseus_init()
+perseus: Found device with VID/PID 0000:0000 on BUS1 ADDR1
+perseus: Found device with VID/PID 0000:0000 on BUS2 ADDR1
+perseus: Found device with VID/PID 0000:0000 on BUS3 ADDR1
+perseus: Found device with VID/PID 0000:0000 on BUS4 ADDR1
+perseus: Found device with VID/PID 0000:0000 on BUS5 ADDR1
+perseus: poll libusb thread started...
+perseus: setting thread priority to 99...
+perseus: done
+0 Perseus receivers found
+No Perseus receivers detected
+perseus: perseus_exit()
+...
+...
+
+#
+# what if my distro doesn't support a binary package for libusb 1.0 ?
+#
+# go your home dir
+cd ~ 
+# download the package
+wget http://downloads.sourceforge.net/libusb/libusb-1.0.6.tar.bz2
+# unzip it
+bunzip2 libusb-1.0.6.tar.bz2 
+# create the directory tree
+tar -xvf libusb-1.0.6.tar
+# go into it
+cd libusb-1.0.6
+# configure, compile and install
+./configure
+make
+sudo make install
+sudo ldconfig
+
+
+
+
+
+
+
+
+
+

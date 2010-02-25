@@ -100,7 +100,7 @@ int perseus_fx2_ram_write(libusb_device_handle *handle, uint16_t wAddr, char *bu
 								FX2_REQUEST_FIRMWARE_LOAD,
 								wAddr,
 								0,
-								buf,
+								(unsigned char *)buf,
 								buflen,
 								FX2_TIMEOUT)<0) 
 		return errorset(PERSEUS_IOERROR, "fx2 ram write failed at addr=%04hX",wAddr);
@@ -119,7 +119,7 @@ int perseus_fx2_read_eeprom(libusb_device_handle *handle, uint16_t addr, void *b
 	// Issue a EEPROMREAD command to the Fx2
 	if ((rc=libusb_bulk_transfer(handle, 
 									PERSEUS_EP_CMD, 
-									(char*)&cmd, sizeof(cmd), 
+									(unsigned char*)&cmd, sizeof(cmd), 
 									&transferred, 
 									FX2_TIMEOUT))<0)
 		return errorset(PERSEUS_IOERROR, "EEPROMREAD command failed. Written %d bytes", transferred);
@@ -130,7 +130,7 @@ int perseus_fx2_read_eeprom(libusb_device_handle *handle, uint16_t addr, void *b
 
 	if ((rc=libusb_bulk_transfer(handle, 
 									PERSEUS_EP_STATUS, 
-									(char*)reply, replysize, 
+									(unsigned char *)reply, replysize, 
 									&transferred, 
 									FX2_TIMEOUT))<0) {
 			free(reply);
@@ -164,7 +164,7 @@ int perseus_fx2_download_std_firmware(libusb_device_handle *handle)
 		// and write to Fx2 RAM at specified address
 		if ((rc=perseus_fx2_ram_write(handle, 
 								fwHexRecTable[k].wAddress, 
-								fwHexRecTable[k].cData, 
+								(char *)fwHexRecTable[k].cData, 
 								fwHexRecTable[k].wBytes))<0) {
 				dbgprintf(1,"fx2 ram write failed at record %d/%d",k,FW_NRECORDS);
 				return rc;
@@ -193,18 +193,18 @@ int perseus_fx2_fpga_config(libusb_device_handle *handle, FILE* fbitstream)
 	clock_t endclock;
 
 	// Issue a FPGA reset command
-	if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, &cmdrst,1, &transf, FX2_TIMEOUT)<0) 
+	if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, (unsigned char *)&cmdrst,1, &transf, FX2_TIMEOUT)<0) 
 		return errorset(PERSEUS_IOERROR, "FPGA reset command failed");
 
 	// Write FPGA configuration data
 	while ((nread = fread(pcmdconfigdata, 1, PERSEUS_CMD_CONFIG_TRANSFER_SIZE-1, fbitstream)) !=0 ) {
 		ntowrite = nread+1;
-		if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, cmdconfig, ntowrite, &transf, FX2_TIMEOUT)<0) 
+		if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, (unsigned char *)cmdconfig, ntowrite, &transf, FX2_TIMEOUT)<0) 
 			return errorset(PERSEUS_IOERROR, "io error writing FPGA configuration data");
 		}
 
 	// Issue a FPGA check command
-	if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, &cmdcheck,1, &transf, FX2_TIMEOUT)<0)
+	if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, (unsigned char *)&cmdcheck,1, &transf, FX2_TIMEOUT)<0)
 		return errorset(PERSEUS_IOERROR, "FPGA check command failed");
 
 	// wait 50 ms
@@ -212,7 +212,7 @@ int perseus_fx2_fpga_config(libusb_device_handle *handle, FILE* fbitstream)
     while (clock() < endclock) { };
 
 	// Read FPGA check status
-	if (libusb_bulk_transfer(handle, PERSEUS_EP_STATUS, cmdcheck_status,2, &transf, FX2_TIMEOUT)<0) 
+	if (libusb_bulk_transfer(handle, PERSEUS_EP_STATUS, (unsigned char *)cmdcheck_status,2, &transf, FX2_TIMEOUT)<0) 
 		return errorset(PERSEUS_IOERROR, "FPGA check status failed");
 
 	// Check FPGA DONE line high
@@ -233,8 +233,10 @@ int perseus_fx2_shutdown(libusb_device_handle *handle)
 
 	char cmd = PERSEUS_CMD_SHUTDOWN;
 	// Issue a SHUTDOWN command 
-	if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, &cmd,1, &transf, FX2_TIMEOUT)<0) 
+	if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, (unsigned char *)&cmd,1, &transf, FX2_TIMEOUT)<0) 
 		return errorset(PERSEUS_IOERROR, "shutdown command failed");
+
+    return errornone(0);
 }
 
 int	perseus_fx2_set_porte(libusb_device_handle *handle, uint8_t porte)
@@ -243,7 +245,7 @@ int	perseus_fx2_set_porte(libusb_device_handle *handle, uint8_t porte)
 	char cmd[2] = { PERSEUS_CMD_FX2PORTE, porte };
 
 	// Issue a FX2PORTE command
-	if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, cmd, 2, &transferred, FX2_TIMEOUT)<0) 
+	if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, (unsigned char *)cmd, 2, &transferred, FX2_TIMEOUT)<0) 
 		return errorset(PERSEUS_IOERROR, "FX2PORTE command failed");
 
 	return errornone(0);
@@ -257,11 +259,11 @@ int	perseus_fx2_sio(libusb_device_handle *handle, fpga_sioctl *sioctl, fpga_sioc
 	memcpy(&cmd[1], sioctl, sizeof(fpga_sioctl));
 
 	// Issue a FPGASIO command
-	if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, cmd, 1+sizeof(fpga_sioctl), &transferred, FX2_TIMEOUT)<0) 
+	if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, (unsigned char *)cmd, 1+sizeof(fpga_sioctl), &transferred, FX2_TIMEOUT)<0) 
 		return errorset(PERSEUS_IOERROR, "FPGASIO command failed");
 
 	// Read FPGASIO status
-	if (libusb_bulk_transfer(handle, PERSEUS_EP_STATUS, cmd, 1+sizeof(fpga_sioctl), &transferred, FX2_TIMEOUT)<0) 
+	if (libusb_bulk_transfer(handle, PERSEUS_EP_STATUS, (unsigned char *)cmd, 1+sizeof(fpga_sioctl), &transferred, FX2_TIMEOUT)<0) 
 		return errorset(PERSEUS_IOERROR, "FPGASIO status read failed");
 
 	if (siostatus)
@@ -290,13 +292,13 @@ int	perseus_fx2_sioex(libusb_device_handle *handle, void* dataout, int16_t datao
 	memcpy(&cmd[1], dataout, dataoutsize);
 
 	// Issue a FPGASIO command
-	if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, cmd, 1+dataoutsize, &transferred, FX2_TIMEOUT)<0) {
+	if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, (unsigned char *)cmd, 1+dataoutsize, &transferred, FX2_TIMEOUT)<0) {
 		free(cmd);
 		return errorset(PERSEUS_IOERROR, "FPGASIO command failed");
 		}
 
 	// Read FPGASIO status
-	if (libusb_bulk_transfer(handle, PERSEUS_EP_STATUS, cmd, 1+datainsize, &transferred, FX2_TIMEOUT)<0) {
+	if (libusb_bulk_transfer(handle, PERSEUS_EP_STATUS, (unsigned char *)cmd, 1+datainsize, &transferred, FX2_TIMEOUT)<0) {
 		free(cmd);
 		return errorset(PERSEUS_IOERROR, "FPGASIO status read failed");
 		}
