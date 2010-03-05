@@ -11017,6 +11017,38 @@ CC="$lt_save_CC"
 
 
 
+#
+# configure platform
+# On a x86 PC with linux running $host is: i686-pc-linux-gnu
+#
+#
+case $host in
+
+  *darwin*)
+    { $as_echo "$as_me:$LINENO: Platform: MAC OSX" >&5
+$as_echo "$as_me: Platform: MAC OSX" >&6;}
+    OSX_LDFLAGS=" -L/opt/local/lib"
+    OSX_CFLAGS="-I/opt/local/include"
+    LDFLAGS="$LDFLAGS $OSX_LDFLAGS"
+    CFLAGS="$CFLAGS $OSX_CFLAGS"
+    export LDFLAGS
+    export CFLAGS
+    ;;
+
+  *linux*)
+    { $as_echo "$as_me:$LINENO: Platform LINUX" >&5
+$as_echo "$as_me: Platform LINUX" >&6;}
+    ;;
+
+ *-*-*-*)
+    { $as_echo "$as_me:$LINENO: Platform unknown: $host" >&5
+$as_echo "$as_me: Platform unknown: $host" >&6;}
+    ;;
+
+esac
+
+
+
 # Checks for libraries.
 
 
