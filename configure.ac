@@ -12,6 +12,35 @@ AM_INIT_AUTOMAKE(perseustest, 0.1)
 AC_PROG_CC
 AC_PROG_LIBTOOL
 
+#
+# configure platform
+# On a x86 PC with linux running $host is: i686-pc-linux-gnu
+#
+#
+case $host in
+
+  *darwin*)
+    AC_MSG_NOTICE([Platform: MAC OSX])
+    OSX_LDFLAGS=" -L/opt/local/lib"
+    OSX_CFLAGS="-I/opt/local/include"
+    LDFLAGS="$LDFLAGS $OSX_LDFLAGS"
+    CFLAGS="$CFLAGS $OSX_CFLAGS"
+    export LDFLAGS
+    export CFLAGS
+    ;;
+
+  *linux*)
+    AC_MSG_NOTICE([Platform LINUX])
+    ;;
+
+ *-*-*-*)
+    AC_MSG_NOTICE([Platform unknown: $host])
+    ;;
+
+esac
+
+
+
 # Checks for libraries.
 
 AC_CHECK_LIB([pthread], [pthread_create])
