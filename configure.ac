@@ -27,6 +27,7 @@ case $host in
     CFLAGS="$CFLAGS $OSX_CFLAGS"
     export LDFLAGS
     export CFLAGS
+    AC_PREFIX_DEFAULT(/opt/local)
     ;;
 
   *linux*)
