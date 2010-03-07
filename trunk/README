@@ -53,6 +53,17 @@ cd libperseus-sdr
 sudo make install
 sudo ldconfig
 
+#
+# setup udev system
+#
+sudo groupadd perseususb
+sudo usermod -a -G perseususb `whoami`
+sudo cp 95-perseus.rules /etc/udev/rules.d
+sudo udevadm control --reload-rules
+#
+# Now log off and on again to finally become member of 'perseususb'.
+#
+
 # back to home directory
 cd
 
