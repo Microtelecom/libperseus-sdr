@@ -11024,20 +11024,24 @@ CC="$lt_save_CC"
 #
 case $host in
 
+  *linux*)
+    { $as_echo "$as_me:$LINENO: Platform LINUX: $host" >&5
+$as_echo "$as_me: Platform LINUX: $host" >&6;}
+    XXX_PRFX_DEF="/usr/local"
+    export XXX_PRFX_DEF
+    ;;
+
   *darwin*)
-    { $as_echo "$as_me:$LINENO: Platform: MAC OSX" >&5
-$as_echo "$as_me: Platform: MAC OSX" >&6;}
+    { $as_echo "$as_me:$LINENO: Platform MAC OSX: $host" >&5
+$as_echo "$as_me: Platform MAC OSX: $host" >&6;}
     OSX_LDFLAGS=" -L/opt/local/lib"
     OSX_CFLAGS="-I/opt/local/include"
     LDFLAGS="$LDFLAGS $OSX_LDFLAGS"
     CFLAGS="$CFLAGS $OSX_CFLAGS"
     export LDFLAGS
     export CFLAGS
-    ;;
-
-  *linux*)
-    { $as_echo "$as_me:$LINENO: Platform LINUX" >&5
-$as_echo "$as_me: Platform LINUX" >&6;}
+    XXX_PRFX_DEF="/opt/local"
+    export XXX_PRFX_DEF
     ;;
 
  *-*-*-*)
@@ -11047,6 +11051,13 @@ $as_echo "$as_me: Platform unknown: $host" >&6;}
 
 esac
 
+if test "x$XXX_PRFX_DEF" = x; then
+  ac_default_prefix=`pwd`
+
+else
+  ac_default_prefix="$XXX_PRFX_DEF"
+
+fi
 
 
 # Checks for libraries.

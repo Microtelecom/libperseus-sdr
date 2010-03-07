@@ -19,19 +19,22 @@ AC_PROG_LIBTOOL
 #
 case $host in
 
+  *linux*)
+    AC_MSG_NOTICE([Platform LINUX: $host])
+    XXX_PRFX_DEF="/usr/local"
+    export XXX_PRFX_DEF 
+    ;;
+
   *darwin*)
-    AC_MSG_NOTICE([Platform: MAC OSX])
+    AC_MSG_NOTICE([Platform MAC OSX: $host])
     OSX_LDFLAGS=" -L/opt/local/lib"
     OSX_CFLAGS="-I/opt/local/include"
     LDFLAGS="$LDFLAGS $OSX_LDFLAGS"
     CFLAGS="$CFLAGS $OSX_CFLAGS"
     export LDFLAGS
     export CFLAGS
-    AC_PREFIX_DEFAULT(/opt/local)
-    ;;
-
-  *linux*)
-    AC_MSG_NOTICE([Platform LINUX])
+    XXX_PRFX_DEF="/opt/local"
+    export XXX_PRFX_DEF 
     ;;
 
  *-*-*-*)
@@ -40,7 +43,7 @@ case $host in
 
 esac
 
-
+AS_IF([test "x$XXX_PRFX_DEF" = x], AC_PREFIX_DEFAULT([`pwd`]), AC_PREFIX_DEFAULT(["$XXX_PRFX_DEF"]))
 
 # Checks for libraries.
 
