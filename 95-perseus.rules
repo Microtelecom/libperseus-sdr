@@ -1,0 +1,1 @@
+ACTION=="add", SUBSYSTEM=="usb", SYSFS{idVendor}=="04b4", SYSFS{idProduct}=="325c", GROUP="perseususb"
