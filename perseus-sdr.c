@@ -660,5 +660,103 @@ static void *poll_libusb_thread_fn(void *pparams)
 
 	dbgprintf(3,"poll libusb thread terminating...");
 
-    return 0;
+	return 0;
+}
+
+//
+// Static data for sample rate to FPGA file name conversion
+//
+
+typedef struct _sr {
+	int srate;
+	char *file_name;
+} sample_rates;
+
+static char *getFpgaFile (int xsr)
+{
+	unsigned int i;
+	static sample_rates sr[] = {
+		{ 125000, "perseus125k24v21.rbs" },
+		{ 1000000, "perseus1m24v21.rbs" },
+		{ 250000, "perseus250k24v21.rbs" },
+		{ 2000000, "perseus2m24v21.rbs" },
+		{ 500000, "perseus500k24v21.rbs" },
+		{ 95000, "perseus95k24v31.rbs" }
+	};
+
+	for (i=0; i< (sizeof(sr)/sizeof(sr[0])); ++i) {
+		if (xsr == sr[i].srate) return sr[i].file_name;
+	}
+	return 0;
+}
+
+
+int		perseus_set_sampling_rate(perseus_descr *descr, int new_sample_rate)
+{
+	char *fn;
+
+	dbgprintf(3,"perseus_set_sampling_rate(0x%08X,%d)",(int32_t)descr, new_sample_rate);
+
+	if (descr==NULL)
+		return errorset(PERSEUS_NULLDESCR, "null descriptor");
+
+	if (descr->handle==NULL) 
+		return errorset(PERSEUS_DEVNOTOPEN, "device not open");
+
+	if (descr->firmware_downloaded==FALSE)
+		return errorset(PERSEUS_FWNOTLOADED, "firmware not loaded");
+
+	fn = getFpgaFile (new_sample_rate);
+
+    if ( fn ) {
+        if (perseus_fpga_config (descr, fn) < 0) {
+            dbgprintf(0,"fpga configuration error\n");
+            return errorset(PERSEUS_FPGANOTCFGD, "FPGA not configured: error in perseus_fpga_config. [%s]", fn);
+        }
+    } else {
+		return errorset(PERSEUS_FPGANOTCFGD, "FPGA not configured: sampling rate not found");
+    }
+	return errornone(0);
+}
+
+//
+// Static data for attenuation fromn numerical value in dB to constants conversion
+//
+
+typedef struct _atten {
+	int id;
+	int valInDb;
+} AttenuatorValues ;
+
+int perseus_set_attenuator_in_db (perseus_descr *descr, int new_level_in_db)
+{
+	static AttenuatorValues av [] = {
+		{ PERSEUS_ATT_0DB , 0 } ,
+		{ PERSEUS_ATT_10DB, 10 } ,
+		{ PERSEUS_ATT_20DB, 20 } ,
+		{ PERSEUS_ATT_30DB, 30 } ,
+	} ;
+	int i;
+
+	dbgprintf(3,"perseus_set_attenuator_in_db(0x%08X,%d)",(int32_t)descr, new_level_in_db);
+
+	if (descr==NULL)
+		return errorset(PERSEUS_NULLDESCR, "null descriptor");
+
+	if (descr->handle==NULL) 
+		return errorset(PERSEUS_DEVNOTOPEN, "device not open");
+
+	if (descr->firmware_downloaded==FALSE)
+		return errorset(PERSEUS_FWNOTLOADED, "firmware not loaded");
+
+	if (descr->fpga_configured==FALSE)
+		return errorset(PERSEUS_FPGANOTCFGD, "FPGA not configured");
+
+   	for (i=0; i< (sizeof(av)/sizeof(av[0])); ++i)
+   		if (new_level_in_db == av[i].valInDb) {
+   			if (perseus_set_attenuator(descr, av[i].id) < 0) {
+   				//printf("%s: %s\n", __FUNCTION__, perseus_errorstr());
+   			}
+   		}
+	return errornone(0);
 }

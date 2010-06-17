@@ -98,6 +98,8 @@ int		perseus_set_ddc_center_freq(perseus_descr *descr, double center_freq_hz, in
 int		perseus_start_async_input(perseus_descr *descr, uint32_t buffersize, 
 								perseus_input_callback callback, void *cb_extra);
 int		perseus_stop_async_input(perseus_descr *descr);
+int		perseus_set_sampling_rate(perseus_descr *descr, int new_sample_rate);
+int		perseus_set_attenuator_in_db (perseus_descr *descr, int new_level_in_db);
 
 #ifdef __cplusplus
 }
