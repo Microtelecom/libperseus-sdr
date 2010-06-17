@@ -86,20 +86,32 @@ int main(int argc, char **argv)
 
 	// Configure the receiver for 2 MS/s operations
 	printf("Configuring FPGA...\n");
-	if (perseus_fpga_config(descr, "perseus2m24v21.rbs")<0)
+	//if (perseus_fpga_config(descr, "perseus2m24v21.rbs")<0)
+	if (perseus_set_sampling_rate(descr, 2000000)<0)
 		printf("fpga configuration error: %s\n", perseus_errorstr());
 
 	// Cycle attenuator leds on the receiver front panel
 	// just to see if they indicate what they shoud
-	perseus_set_attenuator(descr, PERSEUS_ATT_0DB);
+//  perseus_set_attenuator(descr, PERSEUS_ATT_0DB);
+//  sleep(1);
+//  perseus_set_attenuator(descr, PERSEUS_ATT_10DB);
+//  sleep(1);
+//  perseus_set_attenuator(descr, PERSEUS_ATT_20DB);
+//  sleep(1);
+//  perseus_set_attenuator(descr, PERSEUS_ATT_30DB);
+//  sleep(1);
+//  perseus_set_attenuator(descr, PERSEUS_ATT_0DB);
+//  sleep(1);
+//
+	perseus_set_attenuator_in_db(descr, 0);
 	sleep(1);
-	perseus_set_attenuator(descr, PERSEUS_ATT_10DB);
+	perseus_set_attenuator_in_db(descr, 10);
 	sleep(1);
-	perseus_set_attenuator(descr, PERSEUS_ATT_20DB);
+	perseus_set_attenuator_in_db(descr, 20);
 	sleep(1);
-	perseus_set_attenuator(descr, PERSEUS_ATT_30DB);
+	perseus_set_attenuator_in_db(descr, 30);
 	sleep(1);
-	perseus_set_attenuator(descr, PERSEUS_ATT_0DB);
+	perseus_set_attenuator_in_db(descr, 0);
 	sleep(1);
 
 	// Enable ADC Dither, Disable ADC Preamp
