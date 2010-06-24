@@ -91,7 +91,7 @@ perseus_descr *perseus_open(int nDev);
 int 	perseus_close(perseus_descr *descr);
 int		perseus_firmware_download(perseus_descr *descr, char *fname);
 int 	perseus_get_product_id(perseus_descr *descr, eeprom_prodid *prodid);
-int		perseus_fpga_config(perseus_descr *descr, char *fname);
+int		perseus_fpga_config(perseus_descr *descr, const char *fname);
 int		perseus_set_attenuator(perseus_descr *descr, uint8_t atten_id);
 int		perseus_set_adc(perseus_descr *descr, int enableDither, int enablePreamp);
 int		perseus_set_ddc_center_freq(perseus_descr *descr, double center_freq_hz, int enablePresel);
@@ -99,7 +99,11 @@ int		perseus_start_async_input(perseus_descr *descr, uint32_t buffersize,
 								perseus_input_callback callback, void *cb_extra);
 int		perseus_stop_async_input(perseus_descr *descr);
 int		perseus_set_sampling_rate(perseus_descr *descr, int new_sample_rate);
+int		perseus_set_sampling_rate_n(perseus_descr *descr, unsigned int new_sample_rate_ordinal);
+int		perseus_get_sampling_rates(perseus_descr *descr, int *buf, unsigned int size);
 int		perseus_set_attenuator_in_db (perseus_descr *descr, int new_level_in_db);
+int		perseus_get_attenuator_values (perseus_descr *descr, int *buf, unsigned int size);
+int		perseus_set_attenuator_n (perseus_descr *descr, int nlo);
 
 #ifdef __cplusplus
 }

@@ -84,11 +84,43 @@ int main(int argc, char **argv)
 					(uint16_t) prodid.hwrel,
 					(uint16_t) prodid.hwver);
 
+    // Printing all sampling rates available .....
+    {
+        int buf[BUFSIZ];
+
+        if (perseus_get_sampling_rates (descr, buf, sizeof(buf)/sizeof(buf[0])) < 0) {
+			printf("get sampling rates error: %s\n", perseus_errorstr());
+        } else {
+            int i = 0;
+            while (buf[i]) {
+                printf("#%d: sample rate: %d\n", i, buf[i]);
+                i++;
+            }
+        }
+    }
+
 	// Configure the receiver for 2 MS/s operations
 	printf("Configuring FPGA...\n");
-	//if (perseus_fpga_config(descr, "perseus2m24v21.rbs")<0)
-	if (perseus_set_sampling_rate(descr, 2000000)<0)
+	//if (perseus_set_sampling_rate(descr, 2000000)<0)  // specify the sampling rate value in Samples/second
+	if (perseus_set_sampling_rate_n(descr, 5)<0)        // specify the sampling rate value as ordinal in the vector
 		printf("fpga configuration error: %s\n", perseus_errorstr());
+
+
+
+    // Printing all attenuator values available .....
+    {
+        int buf[BUFSIZ];
+
+        if (perseus_get_attenuator_values (descr, buf, sizeof(buf)/sizeof(buf[0])) < 0) {
+			printf("get attenuator values error: %s\n", perseus_errorstr());
+        } else {
+            int i = 0;
+            while (buf[i] != -1) {
+                printf("#%d: att val in dB: %d\n", i, buf[i]);
+                i++;
+            }
+        }
+    }
 
 	// Cycle attenuator leds on the receiver front panel
 	// just to see if they indicate what they shoud
@@ -103,15 +135,29 @@ int main(int argc, char **argv)
 //  perseus_set_attenuator(descr, PERSEUS_ATT_0DB);
 //  sleep(1);
 //
-	perseus_set_attenuator_in_db(descr, 0);
+//   perseus_set_attenuator_in_db(descr, 0);
+//   sleep(1);
+//   perseus_set_attenuator_in_db(descr, 10);
+//   sleep(1);
+//   perseus_set_attenuator_in_db(descr, 20);
+//   sleep(1);
+//   perseus_set_attenuator_in_db(descr, 30);
+//   sleep(1);
+//   perseus_set_attenuator_in_db(descr, 0);
+//   sleep(1);
+
+
+    perseus_set_attenuator_in_db(descr, 33); // Bad value !!!
+
+	perseus_set_attenuator_n(descr, 0);
 	sleep(1);
-	perseus_set_attenuator_in_db(descr, 10);
+	perseus_set_attenuator_n(descr, 1);
 	sleep(1);
-	perseus_set_attenuator_in_db(descr, 20);
+	perseus_set_attenuator_n(descr, 2);
 	sleep(1);
-	perseus_set_attenuator_in_db(descr, 30);
+	perseus_set_attenuator_n(descr, 3);
 	sleep(1);
-	perseus_set_attenuator_in_db(descr, 0);
+	perseus_set_attenuator_n(descr, 0);
 	sleep(1);
 
 	// Enable ADC Dither, Disable ADC Preamp
