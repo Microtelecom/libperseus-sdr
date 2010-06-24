@@ -51,6 +51,8 @@
 #define PERSEUS_CANTCREAT		-21
 #define PERSEUS_ERRPARAM		-22
 #define PERSEUS_MUTEXIN			-23
+#define PERSEUS_BUFFERSIZE		-24
+#define PERSEUS_ATTERROR		-25
 
 #define dbgprintf(level, format, args...) \
 	{ \

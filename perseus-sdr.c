@@ -375,7 +375,7 @@ int perseus_get_product_id(perseus_descr *descr, eeprom_prodid *prodid)
 	return errornone(0);
 }
 
-int	perseus_fpga_config(perseus_descr *descr, char *fname)
+int	perseus_fpga_config(perseus_descr *descr, const char *fname)
 {
 	int  rc;
 	FILE *fbitstream;
@@ -672,28 +672,79 @@ typedef struct _sr {
 	char *file_name;
 } sample_rates;
 
+
+static const sample_rates sr[] = {
+	{ 95000,   "perseus95k24v31.rbs"  },
+	{ 125000,  "perseus125k24v21.rbs" },
+	{ 250000,  "perseus250k24v21.rbs" },
+	{ 500000,  "perseus500k24v21.rbs" },
+	{ 1000000, "perseus1m24v21.rbs"   },
+	{ 2000000, "perseus2m24v21.rbs"   },
+};
+
+
 static char *getFpgaFile (int xsr)
 {
 	unsigned int i;
-	static sample_rates sr[] = {
-		{ 125000, "perseus125k24v21.rbs" },
-		{ 1000000, "perseus1m24v21.rbs" },
-		{ 250000, "perseus250k24v21.rbs" },
-		{ 2000000, "perseus2m24v21.rbs" },
-		{ 500000, "perseus500k24v21.rbs" },
-		{ 95000, "perseus95k24v31.rbs" }
-	};
+    char *fn = 0;
+    int prev = 0;
+    int vs = (sizeof(sr)/sizeof(sr[0]));
 
-	for (i=0; i< (sizeof(sr)/sizeof(sr[0])); ++i) {
-		if (xsr == sr[i].srate) return sr[i].file_name;
+	for (i=0; i<vs; ++i) {
+
+        if ( xsr > sr[i].srate) {
+
+            if ( i < (vs-1)) {
+                prev = sr[i].srate;
+                continue;
+
+            } else {
+                fn = sr[i].file_name;
+                break;
+            }
+
+        } else {
+            int m = (sr[i].srate + prev) / 2;
+            if (xsr <= m) {
+                if (i==0) {
+                    return sr[i].file_name;
+                } else {
+                    return sr[i-1].file_name;
+                }
+            } else 
+                return sr[i].file_name;
+        }
 	}
-	return 0;
+	return fn;
 }
+
+
+int  perseus_get_sampling_rates (perseus_descr *descr, int *buf, unsigned int size)
+{
+    if (size > 0) {
+        unsigned int i, j;
+
+        for (i=0; i < size; ++i) { buf[i] = 0; }
+
+        for (i=0,j=0; i< (sizeof(sr)/sizeof(sr[0])); ++i) {
+            if (j < size) { 
+               buf[j++] = sr[i].srate; 
+            } else {
+               return errorset (PERSEUS_BUFFERSIZE, "Insufficient buffer size");
+            }
+        }
+        return errornone(0);
+    } else {
+        return errorset (PERSEUS_ERRPARAM, "Zero lenght buffer");
+    }
+}
+
+
 
 
 int		perseus_set_sampling_rate(perseus_descr *descr, int new_sample_rate)
 {
-	char *fn;
+	const char *fn;
 
 	dbgprintf(3,"perseus_set_sampling_rate(0x%08X,%d)",(int32_t)descr, new_sample_rate);
 
@@ -719,6 +770,41 @@ int		perseus_set_sampling_rate(perseus_descr *descr, int new_sample_rate)
 	return errornone(0);
 }
 
+
+int		perseus_set_sampling_rate_n(perseus_descr *descr, unsigned int nso)
+{
+	const char *fn;
+
+	dbgprintf(3,"perseus_set_sampling_rate_n(0x%08X,%d)",(int32_t)descr, nso);
+
+	if (descr==NULL)
+		return errorset(PERSEUS_NULLDESCR, "null descriptor");
+
+	if (descr->handle==NULL) 
+		return errorset(PERSEUS_DEVNOTOPEN, "device not open");
+
+	if (descr->firmware_downloaded==FALSE)
+		return errorset(PERSEUS_FWNOTLOADED, "firmware not loaded");
+
+    //
+    // Compute the size of the vector
+    int vs = (sizeof(sr)/sizeof(sr[0]));
+
+    if (nso >= vs) {
+        return errorset (PERSEUS_ERRPARAM, "Invalid index in vector");
+    } else {
+        fn = sr[nso].file_name;
+
+        if (perseus_fpga_config (descr, fn) < 0) {
+            dbgprintf(0,"fpga configuration error\n");
+            return errorset(PERSEUS_FPGANOTCFGD, "FPGA not configured: error in perseus_fpga_config. [%s]", fn);
+        } else {
+            return errornone(0);
+        }
+    }
+}
+
+
 //
 // Static data for attenuation fromn numerical value in dB to constants conversion
 //
@@ -728,14 +814,16 @@ typedef struct _atten {
 	int valInDb;
 } AttenuatorValues ;
 
+
+static AttenuatorValues av [] = {
+	{ PERSEUS_ATT_0DB , 0  } ,
+	{ PERSEUS_ATT_10DB, 10 } ,
+	{ PERSEUS_ATT_20DB, 20 } ,
+	{ PERSEUS_ATT_30DB, 30 } ,
+} ;
+
 int perseus_set_attenuator_in_db (perseus_descr *descr, int new_level_in_db)
 {
-	static AttenuatorValues av [] = {
-		{ PERSEUS_ATT_0DB , 0 } ,
-		{ PERSEUS_ATT_10DB, 10 } ,
-		{ PERSEUS_ATT_20DB, 20 } ,
-		{ PERSEUS_ATT_30DB, 30 } ,
-	} ;
 	int i;
 
 	dbgprintf(3,"perseus_set_attenuator_in_db(0x%08X,%d)",(int32_t)descr, new_level_in_db);
@@ -754,9 +842,62 @@ int perseus_set_attenuator_in_db (perseus_descr *descr, int new_level_in_db)
 
    	for (i=0; i< (sizeof(av)/sizeof(av[0])); ++i)
    		if (new_level_in_db == av[i].valInDb) {
-   			if (perseus_set_attenuator(descr, av[i].id) < 0) {
-   				//printf("%s: %s\n", __FUNCTION__, perseus_errorstr());
-   			}
-   		}
-	return errornone(0);
+   			return perseus_set_attenuator(descr, av[i].id);
+        }
+    return errorset(PERSEUS_ATTERROR, "set attenuator error, bad value: %d", new_level_in_db);
 }
+
+
+int		perseus_get_attenuator_values (perseus_descr *descr, int *buf, unsigned int size)
+{
+    if (size > 0) {
+        unsigned int i, j;
+
+        for (i=0; i < size; ++i) { buf[i] = -1; }
+
+        for (i=0,j=0; i< (sizeof(av)/sizeof(av[0])); ++i) {
+            if (j < size) { 
+               buf[j++] = av[i].valInDb; 
+            } else {
+               return errorset (PERSEUS_BUFFERSIZE, "Insufficient buffer size");
+            }
+        }
+        return errornone(0);
+    } else {
+        return errorset (PERSEUS_ERRPARAM, "Zero lenght buffer");
+    }
+
+}
+
+
+int perseus_set_attenuator_n (perseus_descr *descr, int nlo)
+{
+	dbgprintf(3,"perseus_set_attenuator_n(0x%08X,%d)",(int32_t)descr, nlo);
+
+	if (descr==NULL)
+		return errorset(PERSEUS_NULLDESCR, "null descriptor");
+
+	if (descr->handle==NULL) 
+		return errorset(PERSEUS_DEVNOTOPEN, "device not open");
+
+	if (descr->firmware_downloaded==FALSE)
+		return errorset(PERSEUS_FWNOTLOADED, "firmware not loaded");
+
+	if (descr->fpga_configured==FALSE)
+		return errorset(PERSEUS_FPGANOTCFGD, "FPGA not configured");
+
+    //
+    // Compute the size of the vector
+    int vs = (sizeof(av)/sizeof(av[0]));
+
+    if (nlo >= vs) {
+        return errorset (PERSEUS_ERRPARAM, "Invalid index in vector");
+    } else {
+        if (perseus_set_attenuator(descr, av[nlo].id) < 0) {
+            return errorset(PERSEUS_ATTERROR, "set attenuator error");
+        } else {
+            return errornone(0);
+        }
+    }
+}
+
