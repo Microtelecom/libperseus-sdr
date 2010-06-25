@@ -34,6 +34,7 @@
 
 #include "perseus-sdr.h"
 #include "perseuserr.h"
+#include "fpga_data.h"
 
 #define PERSEUS_MAX_DESCR	8
 
@@ -375,45 +376,6 @@ int perseus_get_product_id(perseus_descr *descr, eeprom_prodid *prodid)
 	return errornone(0);
 }
 
-int	perseus_fpga_config(perseus_descr *descr, const char *fname)
-{
-	int  rc;
-	FILE *fbitstream;
-	char fileName[PATH_MAX+1] = {0}; 
-
-	strcpy (fileName, appPath);
-	strcat (fileName, fname);
-
-	dbgprintf(3,"perseus_fpga_config(0x%08X,%s)",(int32_t)descr, fileName);
-
-	if (descr==NULL)
-		return errorset(PERSEUS_NULLDESCR, "null descriptor");
-
-	if (descr->handle==NULL) 
-		return errorset(PERSEUS_DEVNOTOPEN, "device not open");
-
-	if (descr->firmware_downloaded==FALSE)
-		return errorset(PERSEUS_FWNOTLOADED, "firmware not loaded");
-
-	fbitstream = fopen(fileName, "rb");
-	if (fbitstream==NULL) 
-		return errorset(PERSEUS_FILENOTFOUND, "file %s not found", fileName);
-
-	descr->fpga_configured  	= FALSE;
-
-	if ((rc=perseus_fx2_fpga_config(descr->handle,fbitstream))<0) {
-		fclose(fbitstream);
-		return rc;
-		}
-
-	fclose(fbitstream);
-
-	descr->fpga_configured  	= TRUE;
-
-	dbgprintf(3,"fpga config successfull");
-
-	return errornone(0);
-}
 
 int	perseus_set_attenuator(perseus_descr *descr, uint8_t atten_id)
 {
@@ -667,55 +629,57 @@ static void *poll_libusb_thread_fn(void *pparams)
 // Static data for sample rate to FPGA file name conversion
 //
 
-typedef struct _sr {
-	int srate;
-	char *file_name;
-} sample_rates;
+//    typedef struct _sr {
+//    	int srate;
+//    	char *file_name;
+//    } sample_rates;
+//
+//
+//    static const sample_rates sr[] = {
+//    	{ 95000,   "perseus95k24v31.rbs"  },
+//    	{ 125000,  "perseus125k24v21.rbs" },
+//    	{ 250000,  "perseus250k24v21.rbs" },
+//    	{ 500000,  "perseus500k24v21.rbs" },
+//    	{ 1000000, "perseus1m24v21.rbs"   },
+//    	{ 2000000, "perseus2m24v21.rbs"   },
+//    };
+//
 
-
-static const sample_rates sr[] = {
-	{ 95000,   "perseus95k24v31.rbs"  },
-	{ 125000,  "perseus125k24v21.rbs" },
-	{ 250000,  "perseus250k24v21.rbs" },
-	{ 500000,  "perseus500k24v21.rbs" },
-	{ 1000000, "perseus1m24v21.rbs"   },
-	{ 2000000, "perseus2m24v21.rbs"   },
-};
-
-
-static char *getFpgaFile (int xsr)
+static int getFpgaFile (int xsr)
 {
 	unsigned int i;
-    char *fn = 0;
+    //const char *fn = 0;
     int prev = 0;
-    int vs = (sizeof(sr)/sizeof(sr[0]));
+    int index = -1;
+    int vs = nFpgaImages;
 
 	for (i=0; i<vs; ++i) {
 
-        if ( xsr > sr[i].srate) {
+        if ( xsr > fpgaImgTbl[i].speed) {
 
             if ( i < (vs-1)) {
-                prev = sr[i].srate;
+                prev = fpgaImgTbl[i].speed;
                 continue;
 
             } else {
-                fn = sr[i].file_name;
+                //fn = fpgaImgTbl[i].name;
+                index = i;
                 break;
             }
 
         } else {
-            int m = (sr[i].srate + prev) / 2;
+            int m = (fpgaImgTbl[i].speed + prev) / 2;
             if (xsr <= m) {
                 if (i==0) {
-                    return sr[i].file_name;
+                    return i;
                 } else {
-                    return sr[i-1].file_name;
+                    return i-1;
                 }
             } else 
-                return sr[i].file_name;
+                return i;
         }
 	}
-	return fn;
+	return index;
 }
 
 
@@ -726,9 +690,9 @@ int  perseus_get_sampling_rates (perseus_descr *descr, int *buf, unsigned int si
 
         for (i=0; i < size; ++i) { buf[i] = 0; }
 
-        for (i=0,j=0; i< (sizeof(sr)/sizeof(sr[0])); ++i) {
+        for (i=0,j=0; i< nFpgaImages; ++i) {
             if (j < size) { 
-               buf[j++] = sr[i].srate; 
+               buf[j++] = fpgaImgTbl[i].speed; 
             } else {
                return errorset (PERSEUS_BUFFERSIZE, "Insufficient buffer size");
             }
@@ -744,7 +708,7 @@ int  perseus_get_sampling_rates (perseus_descr *descr, int *buf, unsigned int si
 
 int		perseus_set_sampling_rate(perseus_descr *descr, int new_sample_rate)
 {
-	const char *fn;
+	int index;
 
 	dbgprintf(3,"perseus_set_sampling_rate(0x%08X,%d)",(int32_t)descr, new_sample_rate);
 
@@ -757,24 +721,26 @@ int		perseus_set_sampling_rate(perseus_descr *descr, int new_sample_rate)
 	if (descr->firmware_downloaded==FALSE)
 		return errorset(PERSEUS_FWNOTLOADED, "firmware not loaded");
 
-	fn = getFpgaFile (new_sample_rate);
+	index = getFpgaFile (new_sample_rate);
 
-    if ( fn ) {
-        if (perseus_fpga_config (descr, fn) < 0) {
+    if ( index >= 0 ) {
+        if (perseus_fx2_fpga_config_sr(descr->handle, fpgaImgTbl[index].speed) < 0) {
             dbgprintf(0,"fpga configuration error\n");
-            return errorset(PERSEUS_FPGANOTCFGD, "FPGA not configured: error in perseus_fpga_config. [%s]", fn);
+            return errorset(PERSEUS_FPGANOTCFGD, "FPGA not configured: error in perseus_fpga_config. [%d]", index);
         }
     } else {
 		return errorset(PERSEUS_FPGANOTCFGD, "FPGA not configured: sampling rate not found");
     }
+    descr->fpga_configured          = TRUE;
+
+    dbgprintf(3,"fpga config successfull");
+
 	return errornone(0);
 }
 
 
 int		perseus_set_sampling_rate_n(perseus_descr *descr, unsigned int nso)
 {
-	const char *fn;
-
 	dbgprintf(3,"perseus_set_sampling_rate_n(0x%08X,%d)",(int32_t)descr, nso);
 
 	if (descr==NULL)
@@ -788,19 +754,12 @@ int		perseus_set_sampling_rate_n(perseus_descr *descr, unsigned int nso)
 
     //
     // Compute the size of the vector
-    int vs = (sizeof(sr)/sizeof(sr[0]));
+    int vs = nFpgaImages;
 
     if (nso >= vs) {
         return errorset (PERSEUS_ERRPARAM, "Invalid index in vector");
     } else {
-        fn = sr[nso].file_name;
-
-        if (perseus_fpga_config (descr, fn) < 0) {
-            dbgprintf(0,"fpga configuration error\n");
-            return errorset(PERSEUS_FPGANOTCFGD, "FPGA not configured: error in perseus_fpga_config. [%s]", fn);
-        } else {
-            return errornone(0);
-        }
+        return perseus_set_sampling_rate(descr, fpgaImgTbl[nso].speed);
     }
 }
 

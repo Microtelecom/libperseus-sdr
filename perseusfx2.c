@@ -30,6 +30,7 @@
 
 #include "perseusfx2.h"
 #include "perseuserr.h"
+#include "fpga_data.h"
 
 #define FX2_TIMEOUT 	1000
 
@@ -182,49 +183,6 @@ int perseus_fx2_download_std_firmware(libusb_device_handle *handle)
 	return errornone(0);
 }
 
-int perseus_fx2_fpga_config(libusb_device_handle *handle, FILE* fbitstream)
-{
-	char cmdrst = PERSEUS_CMD_FPGARESET;
-	char cmdconfig[PERSEUS_CMD_CONFIG_TRANSFER_SIZE] = { PERSEUS_CMD_FPGACONFIG };
-	char *pcmdconfigdata = cmdconfig+1;
-	char cmdcheck = PERSEUS_CMD_FPGACHECK;
-	char cmdcheck_status[2];
-	int	 nread,ntowrite, transf;
-	clock_t endclock;
-
-	// Issue a FPGA reset command
-	if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, (unsigned char *)&cmdrst,1, &transf, FX2_TIMEOUT)<0) 
-		return errorset(PERSEUS_IOERROR, "FPGA reset command failed");
-
-	// Write FPGA configuration data
-	while ((nread = fread(pcmdconfigdata, 1, PERSEUS_CMD_CONFIG_TRANSFER_SIZE-1, fbitstream)) !=0 ) {
-		ntowrite = nread+1;
-		if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, (unsigned char *)cmdconfig, ntowrite, &transf, FX2_TIMEOUT)<0) 
-			return errorset(PERSEUS_IOERROR, "io error writing FPGA configuration data");
-		}
-
-	// Issue a FPGA check command
-	if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, (unsigned char *)&cmdcheck,1, &transf, FX2_TIMEOUT)<0)
-		return errorset(PERSEUS_IOERROR, "FPGA check command failed");
-
-	// wait 50 ms
-    endclock = clock() + 50*CLOCKS_PER_SEC/1000;
-    while (clock() < endclock) { };
-
-	// Read FPGA check status
-	if (libusb_bulk_transfer(handle, PERSEUS_EP_STATUS, (unsigned char *)cmdcheck_status,2, &transf, FX2_TIMEOUT)<0) 
-		return errorset(PERSEUS_IOERROR, "FPGA check status failed");
-
-	// Check FPGA DONE line high
-	if (cmdcheck_status[1]!=TRUE) 
-		return errorset(PERSEUS_FPGACFGERROR, 
-						"FPGA configuration failed rc=[%hd,%hd]",
-						(uint16_t)cmdcheck_status[0],
-						(uint16_t)cmdcheck_status[1]);
-
-	return errornone(0);
-}
-
 int perseus_fx2_shutdown(libusb_device_handle *handle)
 {
 	int transf;
@@ -311,4 +269,73 @@ int	perseus_fx2_sioex(libusb_device_handle *handle, void* dataout, int16_t datao
 	return errornone(0);
 }
 
+int perseus_fx2_fpga_config_sr (libusb_device_handle *handle, int sample_rate)
+{
+	char cmdrst = PERSEUS_CMD_FPGARESET;
+	char cmdconfig[PERSEUS_CMD_CONFIG_TRANSFER_SIZE] = { PERSEUS_CMD_FPGACONFIG };
+	char *pcmdconfigdata = cmdconfig+1;
+	char cmdcheck = PERSEUS_CMD_FPGACHECK;
+	char cmdcheck_status[2];
+	int	 transf;
+	clock_t endclock;
+    int  n;
+
+    for (n=0; n<nFpgaImages;++n) {
+        
+        if (sample_rate == fpgaImgTbl [n].speed) {
+            const unsigned char *p = fpgaImgTbl [n].code;
+            int left = fpgaImgTbl [n].size;
+            int ntowrite;
+
+            dbgprintf(3,"perseus_fx2_fpga_config_speed(0x%08X,): %d %s %d",(int32_t)handle, 
+                      fpgaImgTbl [n].speed, fpgaImgTbl [n].name, fpgaImgTbl [n].size);
+
+			// Issue a FPGA reset command
+			if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, (unsigned char *)&cmdrst,1, &transf, FX2_TIMEOUT)<0) 
+				return errorset(PERSEUS_IOERROR, "FPGA reset command failed");
+
+			// Write FPGA configuration data
+			//while ((nread = fread(pcmdconfigdata, 1, PERSEUS_CMD_CONFIG_TRANSFER_SIZE-1, fbitstream)) !=0 ) {
+
+            while (left != 0) {
+				//ntowrite = nread+1;
+
+                ntowrite = ((PERSEUS_CMD_CONFIG_TRANSFER_SIZE-1) < left ? (PERSEUS_CMD_CONFIG_TRANSFER_SIZE-1): left);
+
+				memcpy (pcmdconfigdata, p, ntowrite);
+				left     -= ntowrite;
+				p        += ntowrite;
+				ntowrite += 1; 
+
+				if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, (unsigned char *)cmdconfig, ntowrite, &transf, FX2_TIMEOUT)<0) 
+					return errorset(PERSEUS_IOERROR, "io error writing FPGA configuration data");
+ 
+			}
+
+			// Issue a FPGA check command
+			if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, (unsigned char *)&cmdcheck,1, &transf, FX2_TIMEOUT)<0)
+				return errorset(PERSEUS_IOERROR, "FPGA check command failed");
+
+			// wait 50 ms
+		    endclock = clock() + 50*CLOCKS_PER_SEC/1000;
+		    while (clock() < endclock) { };
+
+			// Read FPGA check status
+			if (libusb_bulk_transfer(handle, PERSEUS_EP_STATUS, (unsigned char *)cmdcheck_status,2, &transf, FX2_TIMEOUT)<0) 
+				return errorset(PERSEUS_IOERROR, "FPGA check status failed");
+
+			// Check FPGA DONE line high
+			if (cmdcheck_status[1]!=TRUE) 
+				return errorset(PERSEUS_FPGACFGERROR, 
+								"FPGA configuration failed rc=[%hd,%hd]",
+								(uint16_t)cmdcheck_status[0],
+								(uint16_t)cmdcheck_status[1]);
+
+			return errornone(0);
+        }
+
+    }
+
+	return errorset(PERSEUS_FPGACFGERROR, "FPGA configuration failed, invalid speed.");
+}
 
