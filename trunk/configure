@@ -788,6 +788,7 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+HAVE_HEXDUMP
 CPP
 OTOOL64
 OTOOL
@@ -4316,13 +4317,13 @@ if test "${lt_cv_nm_interface+set}" = set; then
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:4319: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:4320: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4322: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:4323: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4325: output\"" >&5)
+  (eval echo "\"\$as_me:4326: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -5528,7 +5529,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 5531 "configure"' > conftest.$ac_ext
+  echo '#line 5532 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7381,11 +7382,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7384: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7385: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7388: \$? = $ac_status" >&5
+   echo "$as_me:7389: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7720,11 +7721,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7723: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7724: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7727: \$? = $ac_status" >&5
+   echo "$as_me:7728: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7825,11 +7826,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7828: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7829: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:7832: \$? = $ac_status" >&5
+   echo "$as_me:7833: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -7880,11 +7881,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7883: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7884: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:7887: \$? = $ac_status" >&5
+   echo "$as_me:7888: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -10693,7 +10694,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10696 "configure"
+#line 10697 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10789,7 +10790,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10792 "configure"
+#line 10793 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11294,6 +11295,54 @@ _ACEOF
 
 fi
 
+
+#
+# Check for utility used in code generation for FPGA
+#
+# Extract the first word of "hexdump", so it can be a program name with args.
+set dummy hexdump; ac_word=$2
+{ $as_echo "$as_me:$LINENO: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_HAVE_HEXDUMP+set}" = set; then
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$HAVE_HEXDUMP"; then
+  ac_cv_prog_HAVE_HEXDUMP="$HAVE_HEXDUMP" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_HAVE_HEXDUMP="true"
+    $as_echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_prog_HAVE_HEXDUMP" && ac_cv_prog_HAVE_HEXDUMP="false"
+fi
+fi
+HAVE_HEXDUMP=$ac_cv_prog_HAVE_HEXDUMP
+if test -n "$HAVE_HEXDUMP"; then
+  { $as_echo "$as_me:$LINENO: result: $HAVE_HEXDUMP" >&5
+$as_echo "$HAVE_HEXDUMP" >&6; }
+else
+  { $as_echo "$as_me:$LINENO: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+
+if test "x$HAVE_HEXDUMP" = "xfalse"; then
+	{ { $as_echo "$as_me:$LINENO: error: *********** hexdump needed but was not found, please install it (bsdmainutils package in Debian)" >&5
+$as_echo "$as_me: error: *********** hexdump needed but was not found, please install it (bsdmainutils package in Debian)" >&2;}
+   { (exit 1); exit 1; }; }
+fi
 
 
 # Checks for header files.
