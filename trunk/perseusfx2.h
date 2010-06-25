@@ -111,6 +111,7 @@ int	perseus_fx2_set_porte(libusb_device_handle *handle, uint8_t porte);
 int	perseus_fx2_sio(libusb_device_handle *handle, fpga_sioctl *sioctl, fpga_sioctl *siostatus);
 int	perseus_fx2_sioex(libusb_device_handle *handle, void* dataout, int16_t dataoutsize, void *datain, int16_t datainsize);
 int perseus_fx2_shutdown(libusb_device_handle *handle);
+int perseus_fx2_fpga_config_sr(libusb_device_handle *handle, int sample_rate);
 
 #ifdef __cplusplus
 }

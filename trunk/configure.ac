@@ -57,6 +57,15 @@ AC_CHECK_LIB([usb-1.0], [libusb_init], [],
              ])
 AC_CHECK_LIB([dl], [dlopen])
 
+#
+# Check for utility used in code generation for FPGA
+#
+AC_CHECK_PROG(HAVE_HEXDUMP, hexdump, true, false)
+
+if test "x$HAVE_HEXDUMP" = "xfalse"; then
+	AC_MSG_ERROR([*********** hexdump needed but was not found, please install it (bsdmainutils package in Debian)])
+fi
+
 
 # Checks for header files.
 AC_HEADER_STDC
