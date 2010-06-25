@@ -35,3 +35,13 @@ autoheader
 libtoolize --automake
 automake --add-missing -Wno-portability -Wno-override -Wnone
 
+
+#
+# On old system, try to submit the following commands (without leading #)
+#
+# rm -fr config.cache autom4te*.cache config.guess  config.sub ltmain.sh
+# aclocal
+# automake --add-missing
+# autoconf
+# autoreconf --install
+
