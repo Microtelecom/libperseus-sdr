@@ -16,7 +16,6 @@
 
 
 
-
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
@@ -58,14 +57,14 @@ am__vpath_adj = case $$p in \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" \
-	"$(DESTDIR)$(firmwaredir)" "$(DESTDIR)$(hdrdir)"
+	"$(DESTDIR)$(hdrdir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libperseus_sdr_la_LIBADD =
 am_libperseus_sdr_la_OBJECTS = libperseus_sdr_la-perseus-sdr.lo \
 	libperseus_sdr_la-perseuserr.lo \
 	libperseus_sdr_la-perseusfx2.lo \
-	libperseus_sdr_la-perseus-in.lo
+	libperseus_sdr_la-perseus-in.lo libperseus_sdr_la-fpga_data.lo
 libperseus_sdr_la_OBJECTS = $(am_libperseus_sdr_la_OBJECTS)
 libperseus_sdr_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) \
@@ -74,7 +73,8 @@ libperseus_sdr_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 am_perseustest_OBJECTS = perseustest.$(OBJEXT) perseus-sdr.$(OBJEXT) \
-	perseuserr.$(OBJEXT) perseusfx2.$(OBJEXT) perseus-in.$(OBJEXT)
+	perseuserr.$(OBJEXT) perseusfx2.$(OBJEXT) perseus-in.$(OBJEXT) \
+	fpga_data.$(OBJEXT)
 perseustest_OBJECTS = $(am_perseustest_OBJECTS)
 perseustest_LDADD = $(LDADD)
 am_perseustest_dyn_OBJECTS = perseustest.$(OBJEXT)
@@ -96,8 +96,6 @@ SOURCES = $(libperseus_sdr_la_SOURCES) $(perseustest_SOURCES) \
 	$(perseustest_dyn_SOURCES)
 DIST_SOURCES = $(libperseus_sdr_la_SOURCES) $(perseustest_SOURCES) \
 	$(perseustest_dyn_SOURCES)
-firmwareDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(firmware_DATA)
 hdrHEADERS_INSTALL = $(INSTALL_HEADER)
 HEADERS = $(hdr_HEADERS)
 ETAGS = etags
@@ -137,6 +135,7 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
 GREP = @GREP@
+HAVE_HEXDUMP = @HAVE_HEXDUMP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -228,29 +227,19 @@ top_srcdir = @top_srcdir@
 AM_CFLAGS = -Wall -O3
 AM_LDFLAGS = 
 AM_LIBS = -lusb1.0 -ldl
-perseustest_SOURCES = perseustest.c perseus-sdr.c perseuserr.c perseusfx2.c perseus-in.c \
-                      perseuserr.h perseusfx2.h perseus-in.h perseus-sdr.h
+perseustest_SOURCES = perseustest.c perseus-sdr.c perseuserr.c perseusfx2.c perseus-in.c fpga_data.c \
+                      perseuserr.h perseusfx2.h perseus-in.h perseus-sdr.h fpga_data.h
 
 perseustest_dyn_SOURCES = perseustest.c perseuserr.h
 perseustest_dyn_LDADD = -lperseus-sdr
 lib_LTLIBRARIES = libperseus-sdr.la
 libperseus_sdr_la_CFLAGS = $(AM_CFLAGS) -pthread
-libperseus_sdr_la_SOURCES = perseus-sdr.c perseuserr.c perseusfx2.c perseus-in.c \
-                             perseuserr.h perseusfx2.h perseus-in.h perseus-sdr.h
+libperseus_sdr_la_SOURCES = perseus-sdr.c perseuserr.c perseusfx2.c perseus-in.c fpga_data.c \
+                             perseuserr.h perseusfx2.h perseus-in.h perseus-sdr.h fpga_data.h
 
 hdrdir = $(includedir)
 hdr_HEADERS = perseus-sdr.h perseusfx2.h perseus-in.h perseuserr.h
-
-#
-# FPGA microcode files
-#
-EXTRA_DIST = perseus125k24v21.rbs  perseus250k24v21.rbs  perseus500k24v21.rbs \
-             perseus1m24v21.rbs    perseus2m24v21.rbs    perseus95k24v31.rbs
-
-firmwaredir = $(libdir)/
-firmware_DATA = perseus125k24v21.rbs  perseus250k24v21.rbs  perseus500k24v21.rbs \
-                perseus1m24v21.rbs    perseus2m24v21.rbs    perseus95k24v31.rbs
-
+CLEANFILES = generated.cpp
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -376,6 +365,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fpga_data.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libperseus_sdr_la-fpga_data.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libperseus_sdr_la-perseus-in.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libperseus_sdr_la-perseus-sdr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libperseus_sdr_la-perseuserr.Plo@am__quote@
@@ -435,6 +426,13 @@ libperseus_sdr_la-perseus-in.lo: perseus-in.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libperseus_sdr_la_CFLAGS) $(CFLAGS) -c -o libperseus_sdr_la-perseus-in.lo `test -f 'perseus-in.c' || echo '$(srcdir)/'`perseus-in.c
 
+libperseus_sdr_la-fpga_data.lo: fpga_data.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libperseus_sdr_la_CFLAGS) $(CFLAGS) -MT libperseus_sdr_la-fpga_data.lo -MD -MP -MF $(DEPDIR)/libperseus_sdr_la-fpga_data.Tpo -c -o libperseus_sdr_la-fpga_data.lo `test -f 'fpga_data.c' || echo '$(srcdir)/'`fpga_data.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/libperseus_sdr_la-fpga_data.Tpo $(DEPDIR)/libperseus_sdr_la-fpga_data.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='fpga_data.c' object='libperseus_sdr_la-fpga_data.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libperseus_sdr_la_CFLAGS) $(CFLAGS) -c -o libperseus_sdr_la-fpga_data.lo `test -f 'fpga_data.c' || echo '$(srcdir)/'`fpga_data.c
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -443,23 +441,6 @@ clean-libtool:
 
 distclean-libtool:
 	-rm -f libtool config.lt
-install-firmwareDATA: $(firmware_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(firmwaredir)" || $(MKDIR_P) "$(DESTDIR)$(firmwaredir)"
-	@list='$(firmware_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(firmwareDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(firmwaredir)/$$f'"; \
-	  $(firmwareDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(firmwaredir)/$$f"; \
-	done
-
-uninstall-firmwareDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(firmware_DATA)'; for p in $$list; do \
-	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(firmwaredir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(firmwaredir)/$$f"; \
-	done
 install-hdrHEADERS: $(hdr_HEADERS)
 	@$(NORMAL_INSTALL)
 	test -z "$(hdrdir)" || $(MKDIR_P) "$(DESTDIR)$(hdrdir)"
@@ -658,12 +639,11 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(DATA) $(HEADERS) \
-		config.h
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(HEADERS) config.h
 install-binPROGRAMS: install-libLTLIBRARIES
 
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(firmwaredir)" "$(DESTDIR)$(hdrdir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(hdrdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -683,6 +663,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -712,7 +693,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-firmwareDATA install-hdrHEADERS
+install-data-am: install-hdrHEADERS
 
 install-dvi: install-dvi-am
 
@@ -750,8 +731,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-firmwareDATA \
-	uninstall-hdrHEADERS uninstall-libLTLIBRARIES
+uninstall-am: uninstall-binPROGRAMS uninstall-hdrHEADERS \
+	uninstall-libLTLIBRARIES
 
 .MAKE: install-am install-strip
 
@@ -764,17 +745,22 @@ uninstall-am: uninstall-binPROGRAMS uninstall-firmwareDATA \
 	distuninstallcheck dvi dvi-am html html-am info info-am \
 	install install-am install-binPROGRAMS install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-firmwareDATA install-hdrHEADERS \
-	install-html install-html-am install-info install-info-am \
+	install-exec-am install-hdrHEADERS install-html \
+	install-html-am install-info install-info-am \
 	install-libLTLIBRARIES install-man install-pdf install-pdf-am \
 	install-ps install-ps-am install-strip installcheck \
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am uninstall-binPROGRAMS \
-	uninstall-firmwareDATA uninstall-hdrHEADERS \
-	uninstall-libLTLIBRARIES
+	uninstall-hdrHEADERS uninstall-libLTLIBRARIES
 
+
+#
+# Generate source file for FPGA code
+#
+fpga_data.c: $(srcdir)/generate_fpga_code.sh $(srcdir)/*.rbs 
+	$(srcdir)/generate_fpga_code.sh > $@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
