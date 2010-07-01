@@ -617,33 +617,15 @@ static void *poll_libusb_thread_fn(void *pparams)
 		}
 
 	// handle libusb events until perseus_exit is called
-	while (poll_libusb_thread_stop==FALSE) 
-		libusb_handle_events(NULL);
-
+	while (poll_libusb_thread_stop==FALSE) {
+			static struct timeval tv;
+            tv.tv_sec = 1, tv.tv_usec = 0;
+			libusb_handle_events_timeout(NULL, &tv);
+	}
 	dbgprintf(3,"poll libusb thread terminating...");
 
 	return 0;
 }
-
-//
-// Static data for sample rate to FPGA file name conversion
-//
-
-//    typedef struct _sr {
-//    	int srate;
-//    	char *file_name;
-//    } sample_rates;
-//
-//
-//    static const sample_rates sr[] = {
-//    	{ 95000,   "perseus95k24v31.rbs"  },
-//    	{ 125000,  "perseus125k24v21.rbs" },
-//    	{ 250000,  "perseus250k24v21.rbs" },
-//    	{ 500000,  "perseus500k24v21.rbs" },
-//    	{ 1000000, "perseus1m24v21.rbs"   },
-//    	{ 2000000, "perseus2m24v21.rbs"   },
-//    };
-//
 
 static int getFpgaFile (int xsr)
 {
@@ -726,7 +708,7 @@ int		perseus_set_sampling_rate(perseus_descr *descr, int new_sample_rate)
     if ( index >= 0 ) {
         if (perseus_fx2_fpga_config_sr(descr->handle, fpgaImgTbl[index].speed) < 0) {
             dbgprintf(0,"fpga configuration error\n");
-            return errorset(PERSEUS_FPGANOTCFGD, "FPGA not configured: error in perseus_fpga_config. [%d]", index);
+            return errorset(PERSEUS_FPGANOTCFGD, "FPGA not configured: error in perseus_set_sampling_rate. [%d]", index);
         }
     } else {
 		return errorset(PERSEUS_FPGANOTCFGD, "FPGA not configured: sampling rate not found");

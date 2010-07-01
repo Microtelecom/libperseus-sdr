@@ -58,8 +58,10 @@ int main(int argc, char **argv)
 		}
 
 	// Open the first one...
-	if ((descr=perseus_open(0))==NULL)
+	if ((descr=perseus_open(0))==NULL) {
 		printf("error: %s\n", perseus_errorstr());
+		return 255;
+	}
 
 	// Download the standard firmware to the unit
 	printf("Downloading firmware...\n");
