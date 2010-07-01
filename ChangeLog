@@ -1,3 +1,5 @@
+Jul 01 2010 r20 Lock on exit bypassed (thanks to Leif SM5BSZ). Minor bugs fixed. andrea.montefusco
+
 Jun 25 2010 r16 FPGA images have been embedded in library. No more data files in installation. andrea.montefusco
 
 Jun 24 2010 r15 More utility functions added (Requested by Leif SM5BSZ for use in LinRad, but generally useful). andrea.montefusco
