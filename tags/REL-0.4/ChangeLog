@@ -1,0 +1,27 @@
+Jul 01 2010 r20 Lock on exit bypassed (thanks to Leif SM5BSZ). Minor bugs fixed. andrea.montefusco
+
+Jun 25 2010 r16 FPGA images have been embedded in library. No more data files in installation. andrea.montefusco
+
+Jun 24 2010 r15 More utility functions added (Requested by Leif SM5BSZ for use in LinRad, but generally useful). andrea.montefusco
+
+Jun 17 2010 r14 Some helper functions added. andrea.montefusco
+
+Mar 07 2010 r13 Bug in installation directory fixed; many thanks to Udo DL3GN. andrea.montefusco
+
+Mar 07 2010 r12 README improved. andrea.montefusco
+
+Mar 06 2010 r11 Default installation directory changed in OSX. andrea.montefusco
+
+Mar 05 2010 r10 Fixed build environment for OSX andrea.montefusco
+
+Mar 05 2010 r9 Second release: Autoconf/automake files added. andrea.montefusco
+
+Feb 25 2010 r8 Cosmetics. andrea.montefusco
+
+Feb 23 2010 r7 Bug fixed in FPGA file loading. andrea.montefusco
+
+Feb 06 2010 r6 Autoconf/automake files added. andrea.montefusco
+
+Feb 04 2010 r5 First release as provided by Microtelecom andrea.montefusco
+
+  
