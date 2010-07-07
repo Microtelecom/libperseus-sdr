@@ -1,3 +1,5 @@
+Jul 07 2010 r22 Pointers printing format changed to avoid warning and incomplete info on 64 bit environment. andrea montefusco
+
 Jul 01 2010 r20 Lock on exit bypassed (thanks to Leif SM5BSZ). Minor bugs fixed. andrea.montefusco
 
 Jun 25 2010 r16 FPGA images have been embedded in library. No more data files in installation. andrea.montefusco

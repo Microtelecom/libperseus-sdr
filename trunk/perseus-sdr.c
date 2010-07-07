@@ -227,7 +227,7 @@ int perseus_close(perseus_descr *descr)
 {
 	int rc;
 
-	dbgprintf(3,"perseus_close(0x%08X)",(int32_t)descr);
+	dbgprintf(3,"perseus_close(%p)",descr);
 
 	if (descr==NULL)
 		return errorset(PERSEUS_NULLDESCR, "null descriptor");
@@ -265,7 +265,7 @@ int	perseus_firmware_download(perseus_descr *descr, char *fname)
 	int bus, devaddr;
 	int index;
 
-	dbgprintf(3,"perseus_firmware_download(0x%08X,%s)",(int32_t)descr,(fname?fname:"Null"));
+	dbgprintf(3,"perseus_firmware_download(%p,%s)",descr,(fname?fname:"Null"));
 
 	if (descr==NULL)
 		return errorset(PERSEUS_NULLDESCR, "null descriptor");
@@ -360,7 +360,7 @@ int	perseus_firmware_download(perseus_descr *descr, char *fname)
 
 int perseus_get_product_id(perseus_descr *descr, eeprom_prodid *prodid)
 {
-	dbgprintf(3,"perseus_get_product_id(0x%08X,...)",(int32_t)descr);
+	dbgprintf(3,"perseus_get_product_id(%p,...)",descr);
 
 	if (descr==NULL)
 		return errorset(PERSEUS_NULLDESCR, "null descriptor");
@@ -381,7 +381,7 @@ int	perseus_set_attenuator(perseus_descr *descr, uint8_t atten_id)
 {
 	int rc;
 
-	dbgprintf(3,"perseus_set_attenuator(0x%08X,%d)",(int32_t)descr, atten_id);
+	dbgprintf(3,"perseus_set_attenuator(%p,%d)",descr, atten_id);
 
 	if (descr==NULL)
 		return errorset(PERSEUS_NULLDESCR, "null descriptor");
@@ -407,7 +407,7 @@ int	perseus_set_adc(perseus_descr *descr, int enableDither, int enablePreamp)
 {
 	int rc;
 
-	dbgprintf(3,"perseus_set_adc(0x%08X,%d,%d)",(int32_t)descr, enableDither, enablePreamp);
+	dbgprintf(3,"perseus_set_adc(%p,%d,%d)",descr, enableDither, enablePreamp);
 
 	if (descr==NULL)
 		return errorset(PERSEUS_NULLDESCR, "null descriptor");
@@ -442,7 +442,7 @@ int	perseus_set_ddc_center_freq(perseus_descr *descr, double center_freq_hz, int
 	uint8_t presel_flt_id;
 	int rc;
 
-	dbgprintf(3,"perseus_set_ddc_center_freq(0x%08X,%.3f,%d)",(int32_t)descr, center_freq_hz, enablePresel);
+	dbgprintf(3,"perseus_set_ddc_center_freq(%p,%.3f,%d)",descr, center_freq_hz, enablePresel);
 
 	if (descr==NULL)
 		return errorset(PERSEUS_NULLDESCR, "null descriptor");
@@ -526,7 +526,7 @@ int	perseus_start_async_input(perseus_descr *descr,
 {
 	int rc;
 
-	dbgprintf(3,"perseus_start_async_input(0x%08X,%d,...)",(int32_t)descr, buffersize);
+	dbgprintf(3,"perseus_start_async_input(%p,%d,...)",descr, buffersize);
 
 	if (descr==NULL)
 		return errorset(PERSEUS_NULLDESCR, "null descriptor");
@@ -567,7 +567,7 @@ int	perseus_stop_async_input(perseus_descr *descr)
 	double elapsed;
 	perseus_input_queue *queue = &descr->input_queue;
 
-	dbgprintf(3,"perseus_stop_async_input(0x%08X)",(int32_t)descr);
+	dbgprintf(3,"perseus_stop_async_input(%p)",descr);
 
 	if (descr==NULL)
 		return errorset(PERSEUS_NULLDESCR, "null descriptor");
@@ -692,7 +692,7 @@ int		perseus_set_sampling_rate(perseus_descr *descr, int new_sample_rate)
 {
 	int index;
 
-	dbgprintf(3,"perseus_set_sampling_rate(0x%08X,%d)",(int32_t)descr, new_sample_rate);
+	dbgprintf(3,"perseus_set_sampling_rate(%p,%d)",descr, new_sample_rate);
 
 	if (descr==NULL)
 		return errorset(PERSEUS_NULLDESCR, "null descriptor");
@@ -723,7 +723,7 @@ int		perseus_set_sampling_rate(perseus_descr *descr, int new_sample_rate)
 
 int		perseus_set_sampling_rate_n(perseus_descr *descr, unsigned int nso)
 {
-	dbgprintf(3,"perseus_set_sampling_rate_n(0x%08X,%d)",(int32_t)descr, nso);
+	dbgprintf(3,"perseus_set_sampling_rate_n(%p,%d)",descr, nso);
 
 	if (descr==NULL)
 		return errorset(PERSEUS_NULLDESCR, "null descriptor");
@@ -767,7 +767,7 @@ int perseus_set_attenuator_in_db (perseus_descr *descr, int new_level_in_db)
 {
 	int i;
 
-	dbgprintf(3,"perseus_set_attenuator_in_db(0x%08X,%d)",(int32_t)descr, new_level_in_db);
+	dbgprintf(3,"perseus_set_attenuator_in_db(%p,%d)",descr, new_level_in_db);
 
 	if (descr==NULL)
 		return errorset(PERSEUS_NULLDESCR, "null descriptor");
@@ -813,7 +813,7 @@ int		perseus_get_attenuator_values (perseus_descr *descr, int *buf, unsigned int
 
 int perseus_set_attenuator_n (perseus_descr *descr, int nlo)
 {
-	dbgprintf(3,"perseus_set_attenuator_n(0x%08X,%d)",(int32_t)descr, nlo);
+	dbgprintf(3,"perseus_set_attenuator_n(%p,%d)",descr, nlo);
 
 	if (descr==NULL)
 		return errorset(PERSEUS_NULLDESCR, "null descriptor");
