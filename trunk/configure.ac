@@ -2,11 +2,11 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT(libperseus_sdr, 0.1, andrew@montefusco.com)
+AC_INIT([libperseus_sdr], [0.2], [andrew@montefusco.com])
 AC_CONFIG_SRCDIR([perseuserr.h])
 AC_CONFIG_HEADER([config.h])
 
-AM_INIT_AUTOMAKE(perseustest, 0.1)
+AM_INIT_AUTOMAKE
 
 # Checks for programs.
 AC_PROG_CC
@@ -85,5 +85,24 @@ AC_C_VOLATILE
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([gettimeofday])
 
-AC_OUTPUT(Makefile)
+AC_CONFIG_FILES([Makefile])
+
+AC_OUTPUT
+
+echo \
+"-----------------------------------------------------
+
+${PACKAGE_NAME} Version ${PACKAGE_VERSION}
+
+Prefix: '${prefix}'.
+Compiler: '${CC} ${CFLAGS} ${CPPFLAGS}'
+Now type 'make @<:@<target>@:>@'
+
+ where the otpional <target> is:
+
+    all           - build all binaries
+    install       - install everything
+
+-----------------------------------------------------"
+
 
