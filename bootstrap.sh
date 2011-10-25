@@ -25,15 +25,13 @@
 #						(andrew at montefusco dot com)
 # ------------------------------------------------------------------------------
 
+if [ -e "Makefile" ]
+then
+  make distclean
+fi
+bash ./cleanup.sh
 
-
-rm -fr config.cache autom4te*.cache
-
-aclocal 
-autoconf
-autoheader
-libtoolize --automake
-automake --add-missing -Wno-portability -Wno-override -Wnone
+autoreconf -i
 
 
 #
