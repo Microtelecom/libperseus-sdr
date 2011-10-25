@@ -42,21 +42,21 @@ cat << ZZZ_PRELUDE_END
 
 ZZZ_PRELUDE_END
 
-
+RBS=$1/'*.rbs'
 
 
 N_FPGA=0
 #
 # generate the FPGA data arrays
 #
-for x in *.rbs
+for x in $RBS
 do
   file_size=$(stat -c%s "$x")
 
   file=${x##*/}
 
   speed=${file#perseus}
-  speed2=${speed%%v*.rbs}
+  speed2=${speed%%v$RBS}
 
   mega=${speed2%%m*}
   kilo=${speed2%%k*}
@@ -105,14 +105,14 @@ YYY_END
 
 echo -n "" > tmpfile
 
-for x in *.rbs
+for x in $RBS
 do
   file_size=$(stat -c%s "$x")
 
   file=${x##*/}
 
   speed=${file#perseus}
-  speed2=${speed%%v*.rbs}
+  speed2=${speed%%v$RBS}
 
   mega=${speed2%%m*}
   kilo=${speed2%%k*}
@@ -193,6 +193,8 @@ int main (void)
 }
 #endif
 XXXXX_END
+
+rm -f tmpfile tmpfile2
 
 
 
