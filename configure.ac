@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([libperseus_sdr], [0.2], [andrew@montefusco.com])
+AC_INIT([libperseus_sdr], [0.3], [andrew@montefusco.com])
 AC_CONFIG_SRCDIR([perseuserr.h])
 AC_CONFIG_HEADER([config.h])
 

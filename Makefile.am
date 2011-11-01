@@ -28,9 +28,13 @@ hdrdir = $(includedir)
 
 hdr_HEADERS = perseus-sdr.h perseusfx2.h perseus-in.h perseuserr.h
 
-noinst_DATA = $(srcdir)/perseus125k24v21.rbs  $(srcdir)/perseus192k24v31.rbs  $(srcdir)/perseus1m24v21.rbs  $(srcdir)/perseus250k24v21.rbs  $(srcdir)/perseus2m24v21.rbs  $(srcdir)/perseus48k24v31.rbs  $(srcdir)/perseus500k24v21.rbs  $(srcdir)/perseus95k24v31.rbs  $(srcdir)/perseus96k24v31.rbs 
+dist_pkgdata_DATA = $(srcdir)/generate_fpga_code.sh $(srcdir)/perseus24v11_512.c $(udev_DATA)
 
-dist_pkgdata_DATA = $(noinst_DATA) $(srcdir)/generate_fpga_code.sh $(srcdir)/perseus24v11_512.c
+#
+# FPGA images
+# have to be distributed in tarball but not installed
+#
+dist_check_DATA = $(srcdir)/perseus125k24v21.rbs  $(srcdir)/perseus192k24v31.rbs  $(srcdir)/perseus1m24v21.rbs  $(srcdir)/perseus250k24v21.rbs  $(srcdir)/perseus2m24v21.rbs  $(srcdir)/perseus48k24v31.rbs  $(srcdir)/perseus500k24v21.rbs  $(srcdir)/perseus95k24v31.rbs  $(srcdir)/perseus96k24v31.rbs 
 
 #
 # Generate source file for FPGA code
@@ -38,7 +42,22 @@ dist_pkgdata_DATA = $(noinst_DATA) $(srcdir)/generate_fpga_code.sh $(srcdir)/per
 BUILT_SOURCES = fpga_data.c
 CLEANFILES = fpga_data.c
 
-fpga_data.c: $(srcdir)/generate_fpga_code.sh $(dist_pkgdata_DATA)
+fpga_data.c: $(srcdir)/generate_fpga_code.sh $(dist_pkgdata_DATA) $(dist_check_DATA)
 	$(srcdir)/generate_fpga_code.sh $(srcdir)/ > $@
+
+
+#
+# UDEV rule file: to activate it do the following command:
+#
+# sudo groupadd perseususb
+# sudo usermod -a -G perseususb `whoami`
+# sudo udevadm control --reload-rules
+#
+udevrule_DATA = $(top_srcdir)/95-perseus.rules
+udevruledir = $(sysconfdir)/udev/rules.d/
+EXTRA_DIST = $(top_srcdir)/95-perseus.rules
+
+#distclean-local::
+#	-$(RM) $(udevrule_DATA)
 
 
