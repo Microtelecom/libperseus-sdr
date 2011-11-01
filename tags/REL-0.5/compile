@@ -1,0 +1,4 @@
+# Perseus SDR Library
+# Test program compilation (static link of the Perseus SDR Library files)
+
+gcc -operseustest -lusb-1.0 perseustest.c perseus-sdr.c perseuserr.c perseusfx2.c perseus-in.c
