@@ -43,6 +43,10 @@ case $host in
 
 esac
 
+INST_USER=`echo $(whoami)`
+AC_SUBST(INST_USER)
+
+
 AS_IF([test "x$XXX_PRFX_DEF" = x], AC_PREFIX_DEFAULT([`pwd`]), AC_PREFIX_DEFAULT(["$XXX_PRFX_DEF"]))
 
 # Checks for libraries.
