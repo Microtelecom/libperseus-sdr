@@ -54,10 +54,12 @@ fpga_data.c: $(srcdir)/generate_fpga_code.sh $(dist_pkgdata_DATA) $(dist_check_D
 # sudo udevadm control --reload-rules
 #
 udevrule_DATA = $(top_srcdir)/95-perseus.rules
-udevruledir = $(sysconfdir)/udev/rules.d/
+udevruledir = $(bindir)
 EXTRA_DIST = $(top_srcdir)/95-perseus.rules
 
-#distclean-local::
-#	-$(RM) $(udevrule_DATA)
+install-data-hook:
+	-cp $(bindir)/95-perseus.rules /etc/udev/rules.d/ ; groupadd perseususb ; echo $(INST_USER) ;usermod -a -G perseususb $(INST_USER) ; udevadm control --reload-rules
 
+uninstall-hook:
+	-rm /etc/udev/rules.d/95-perseus.rules ; groupdel perseususb ; udevadm control --reload-rules
 

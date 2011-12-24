@@ -55,6 +55,7 @@ sudo ldconfig
 
 #
 # setup udev system
+# (for reference only, now the make install procedure takes care to do that)
 #
 sudo groupadd perseususb
 sudo usermod -a -G perseususb `whoami`
