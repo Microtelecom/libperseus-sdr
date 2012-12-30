@@ -3,14 +3,67 @@
 
 AC_PREREQ(2.61)
 AC_INIT([libperseus_sdr], [0.3], [andrew@montefusco.com])
-AC_CONFIG_SRCDIR([perseuserr.h])
-AC_CONFIG_HEADER([config.h])
 
 AM_INIT_AUTOMAKE
 
+AC_CONFIG_SRCDIR([perseuserr.h])
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_MACRO_DIR([build-aux])
+
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_INSTALL
 AC_PROG_LIBTOOL
+
+
+#
+# Checking for build cpu
+# and, if 64 bit, add some linking option
+#
+case $build_cpu in
+
+    i686)
+      AC_MSG_NOTICE([Platform: ix86 32 bit])
+      # checks for platform dependent compiler optimizations
+      AX_CHECK_COMPILE_FLAG(-ffast-math, SIMD_FLAGS="$SIMD_FLAGS -ffast-math", [])
+      AX_CHECK_COMPILE_FLAG(-fopenmp, SIMD_FLAGS="$SIMD_FLAGS -fopenmp", [])
+      SIMD_FLAGS="$SIMD_FLAGS  -march=native "
+      AC_SUBST(SIMD_FLAGS)
+    ;;
+
+    x86_64)
+      AC_MSG_NOTICE([Platform: ix86 64 bit])
+      LDFLAGS="$LDFLAGS -L/lib64 -L/usr/lib64"
+      export LDFLAGS
+      AC_MSG_NOTICE([${LDFLAGS}])      
+      # checks for platform dependent compiler optimizations
+      AX_CHECK_COMPILE_FLAG(-ffast-math, SIMD_FLAGS="$SIMD_FLAGS -ffast-math", [])
+      AX_CHECK_COMPILE_FLAG(-fopenmp, SIMD_FLAGS="$SIMD_FLAGS -fopenmp", [])
+      SIMD_FLAGS="$SIMD_FLAGS  -march=native "
+      AC_SUBST(SIMD_FLAGS)
+    ;;
+
+    armv6l)
+      AC_MSG_NOTICE([Platform: ARM 6])
+      CFLAGS="-O3 -pipe -march=armv6 -mfpu=vfp -mfloat-abi=hard"
+      CXXFLAGS="-O3 -pipe -march=armv6 -mfpu=vfp -mfloat-abi=hard"
+      export CFLAGS
+      export CXXFLAGS
+      AC_MSG_NOTICE([${CFLAGS}])
+      AC_MSG_NOTICE([${CXXFLAGS}])
+    ;;
+
+    armv7l)
+      AC_MSG_NOTICE([Platform: ARM 7])
+      CFLAGS="-O3 -pipe -march=armv7 -mfpu=neon -fno-tree-vectorize -fopenmp"
+      CXXFLAGS="-O3 -pipe -march=armv7 -mfpu=neon -fno-tree-vectorize -fopenmp"
+      export CFLAGS
+      export CXXFLAGS
+      AC_MSG_NOTICE([${CFLAGS}])
+      AC_MSG_NOTICE([${CXXFLAGS}])
+    ;;
+
+esac
 
 #
 # configure platform
@@ -53,10 +106,12 @@ AS_IF([test "x$XXX_PRFX_DEF" = x], AC_PREFIX_DEFAULT([`pwd`]), AC_PREFIX_DEFAULT
 
 AC_CHECK_LIB([pthread], [pthread_create])
 #AC_CHECK_LIB([usb-1.0], [libusb_init])
-# FIXME: Replace `main' with a function in `-lusb-1.0':
+
 AC_CHECK_LIB([usb-1.0], [libusb_init], [],
              [
               echo "Error! You need to have libusb-1.0 around."
+              echo "Ubuntu/Debian: sudo apt-get install libusb-1.0-0-dev"
+              echo "RedHat:        yum install libusb1 libusb1-devel"
               exit -1
              ])
 AC_CHECK_LIB([dl], [dlopen])
@@ -67,7 +122,7 @@ AC_CHECK_LIB([dl], [dlopen])
 AC_CHECK_PROG(HAVE_HEXDUMP, hexdump, true, false)
 
 if test "x$HAVE_HEXDUMP" = "xfalse"; then
-	AC_MSG_ERROR([*********** hexdump needed but was not found, please install it (bsdmainutils package in Debian)])
+	AC_MSG_ERROR([*********** hexdump needed but was not found, please install it (bsdmainutils package in Debian/Ubuntu)])
 fi
 
 
@@ -93,6 +148,11 @@ AC_CONFIG_FILES([Makefile])
 
 AC_OUTPUT
 
+#
+# check the compiler option really working
+#
+corw=`gcc -Q --help=target -march=native`
+
 echo \
 "-----------------------------------------------------
 
@@ -106,6 +166,8 @@ Now type 'make @<:@<target>@:>@'
 
     all           - build all binaries
     install       - install everything
+
+${corw}
 
 -----------------------------------------------------"
 
