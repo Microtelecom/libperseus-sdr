@@ -1,0 +1,5 @@
+#summary Build instructions.
+
+= Introduction =
+
+Please do refer to the [http://code.google.com/p/libperseus-sdr/source/browse/trunk/README README] file in trunk for detailed build instructions.
