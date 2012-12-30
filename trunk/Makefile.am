@@ -1,5 +1,8 @@
+
+ACLOCAL_AMFLAGS = -I build-aux
+
 # flags you want to pass to the C compiler & linker
-AM_CFLAGS  =  -Wall -O3
+AM_CFLAGS  =  -Wall -O3 @SIMD_FLAGS@
 AM_LDFLAGS =
 AM_LIBS    = -lusb1.0 -ldl
 

@@ -49,6 +49,7 @@ urpmi -a libusb1
 cd 
 svn checkout http://libperseus-sdr.googlecode.com/svn/trunk/ libperseus-sdr
 cd libperseus-sdr
+sh bootstrap.sh
 ./configure && make
 sudo make install
 sudo ldconfig
@@ -69,7 +70,7 @@ cd
 
 #
 # test the library
-# note: the outputs shown below is in case the Perseus hardware is not linnked or turned off
+# note: the outputs shown below is in case the Perseus hardware is not linked or turned off
 #
 perseustest_dyn
 perseus: perseus_init()
