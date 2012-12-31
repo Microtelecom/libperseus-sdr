@@ -11,7 +11,7 @@
 #
 sudo apt-get update
 sudo apt-get upgrade
-sudo apt-get install gcc g++ make manpages-dev autoconf automake subversion
+sudo apt-get install gcc g++ make manpages-dev autoconf automake libtool subversion
 #
 # Install the prerequisite library
 #
@@ -27,7 +27,7 @@ su - root
 # next install the prerequisite packages:
 
 yum update
-yum install gcc gcc-c++ man-pages autoconf automake subversion
+yum install gcc gcc-c++ man-pages autoconf automake libtool subversion
 yum install libusb1 libusb1-devel
 
 #
@@ -39,7 +39,7 @@ su - root
 
 # next install the prerequisite packages:
 
-urpmi gcc gcc-c++ man-pages autoconf automake subversion make
+urpmi gcc gcc-c++ man-pages autoconf automake subversion libtool make
 urpmi -a libusb1
 
 
@@ -54,39 +54,69 @@ sh bootstrap.sh
 sudo make install
 sudo ldconfig
 
-#
-# setup udev system
-# (for reference only, now the make install procedure takes care to do that)
-#
-sudo groupadd perseususb
-sudo usermod -a -G perseususb `whoami`
-sudo udevadm control --reload-rules
-#
-# Now log off and on again to finally become member of 'perseususb'.
-#
-
 # back to home directory
 cd
 
 #
 # test the library
-# note: the outputs shown below is in case the Perseus hardware is not linked or turned off
+# note: the outputs shown below is in case the Perseus hardware is not linked
 #
 perseustest_dyn
-perseus: perseus_init()
-perseus: Found device with VID/PID 0000:0000 on BUS1 ADDR1
-perseus: Found device with VID/PID 0000:0000 on BUS2 ADDR1
-perseus: Found device with VID/PID 0000:0000 on BUS3 ADDR1
-perseus: Found device with VID/PID 0000:0000 on BUS4 ADDR1
-perseus: Found device with VID/PID 0000:0000 on BUS5 ADDR1
-perseus: poll libusb thread started...
-perseus: setting thread priority to 99...
-perseus: done
-0 Perseus receivers found
-No Perseus receivers detected
-perseus: perseus_exit()
-...
-...
+
+# perseus: perseus_init()
+# perseus: Found device with VID/PID 0000:0000 on BUS1 ADDR1
+# perseus: Found device with VID/PID 0000:0000 on BUS2 ADDR1
+# perseus: Found device with VID/PID 0000:0000 on BUS3 ADDR1
+# perseus: Found device with VID/PID 0000:0000 on BUS4 ADDR1
+# perseus: Found device with VID/PID 0000:0000 on BUS5 ADDR1
+# perseus: poll libusb thread started...
+# perseus: setting thread priority to 99...
+# perseus: done
+# 0 Perseus receivers found
+# No Perseus receivers detected
+# perseus: perseus_exit()
+# ...
+# ...
+
+
+#
+# setup udev system
+# (for reference only ! now the make install procedure takes care to do that)
+#
+sudo groupadd perseususb
+sudo usermod -a -G perseususb `whoami`
+sudo udevadm control --reload-rules
+#
+# Now log off and on again in order to finally become member of 'perseususb'.
+# A reboot is not needed.
+#
+
+#
+# now, link your Perseus receiver to USB interface and plug the power supply
+# you have to hear a click, led on receiver's front panel lights
+#
+# looking at filtered lsusb output you should see the following:
+# (Bus and Device figures can vary)
+
+lsusb | grep Cypress
+Bus 001 Device 007: ID 04b4:325c Cypress Semiconductor Corp. 
+
+#
+# now try again the test program, you should see a lot of output (not shown here)
+# and, overall, hear the relays clicking
+#
+cd
+perseustest_dyn 
+
+# ...
+# 
+# take care to one of the last messages, it should read as follows:
+#
+# perseus: Elapsed time: 10.003243 s - kSamples read: 2499 - Rate: 249.9 kS/s
+#
+# that above ends the build procedure.
+#
+
 
 #
 # what if my distro doesn't support a binary package for libusb 1.0 ?
