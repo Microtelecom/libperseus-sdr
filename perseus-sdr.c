@@ -110,7 +110,7 @@ int	perseus_init(void)
 	}
 	
 	libusb_init(NULL);
-	libusb_set_debug(NULL, LIBUSB_LOG_LEVEL_INFO);
+	libusb_set_debug(NULL, 3 /* LIBUSB_LOG_LEVEL_INFO*/ );
 
 	// find all perseus devices
 	num_devs = libusb_get_device_list(NULL, &list);
@@ -229,15 +229,12 @@ perseus_descr *perseus_open(int nDev)
 	
 	if((rc = libusb_clear_halt(descr->handle, PERSEUS_EP_CMD))!=0) {
 		errorset(PERSEUS_LIBUSBERR, "libusb_clear_halt error %d", rc);
-		return NULL;
 		}
 	if((rc = libusb_clear_halt(descr->handle, PERSEUS_EP_STATUS))!=0) {
 		errorset(PERSEUS_LIBUSBERR, "libusb__clear_halt error error %d", rc);
-		return NULL;
 		}
 	if((rc = libusb_clear_halt(descr->handle, PERSEUS_EP_DATAIN))!=0) {
 		errorset(PERSEUS_LIBUSBERR, "libusb__clear_halt error error %d", rc);
-		return NULL;
 		}
 
 	descr->is_preserie 			= FALSE;
@@ -356,8 +353,6 @@ int	perseus_firmware_download(perseus_descr *descr, char *fname)
 
 	dbgprintf(3,"Please wait...");
 
-	sleep (4);
-
 	dbgprintf(3,"try to open the device after re-enumeration...");
 	
 	// reopen our device
@@ -365,7 +360,7 @@ int	perseus_firmware_download(perseus_descr *descr, char *fname)
 		return errorset(PERSEUS_LIBUSBERR, "perseus_open error %d, reopening.", rc);
 
 	dbgprintf(3,"open successful");
-
+	
 	descr->firmware_downloaded  = TRUE;
 	descr->presel_flt_id        = PERSEUS_FLT_UNDEF;
 
