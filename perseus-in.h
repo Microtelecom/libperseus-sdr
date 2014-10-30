@@ -84,5 +84,9 @@ int  perseus_input_queue_completed(perseus_input_queue *queue);
 }
 #endif
 
+#if defined _WIN32
+#define	sleep(x) Sleep((x)*1000)
+#endif
+
 #endif // _perseus_in
 

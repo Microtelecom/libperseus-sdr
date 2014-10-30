@@ -30,7 +30,9 @@
 #include <unistd.h>
 #include <limits.h>
 #define __USE_GNU
+#if !defined(_WIN32)
 #include <dlfcn.h>
+#endif
 
 #include "perseus-sdr.h"
 #include "perseuserr.h"
@@ -42,12 +44,15 @@
 
 static perseus_descr	perseus_list[PERSEUS_MAX_DESCR];
 static int				perseus_list_entries 	= 0;
-static pthread_t		poll_libusb_thread 		= 0;
+static pthread_t		poll_libusb_thread = { 0 };
+static int 				poll_libusb_thread_flag = 0;
 static int				poll_libusb_thread_stop = FALSE;
 
-static char myPath[PATH_MAX+1] = {0};
-static char appPath[PATH_MAX+1] = {0};
+#if !defined __MINGW32__
+static char myPath [PATH_MAX+1] = {0};
 static char appName[PATH_MAX+1] = {0}; 
+#endif
+static char appPath[PATH_MAX+1] = {0};
 
 // local function decl -----------------------------------------------
 
@@ -70,6 +75,7 @@ int	perseus_init(void)
 
 	dbgprintf(3,"perseus_init()");
 
+#if !defined _WIN32
     // try to detect the directory from which the library has been loaded
 	{
 		Dl_info info;
@@ -91,9 +97,12 @@ int	perseus_init(void)
 			dbgprintf(3,"path: %s name: %s", appPath, appName);
 		}
 	}
+#else
+	strcpy (appPath, "./");
+#endif
 
 	libusb_init(NULL);
-//	libusb_set_debug(NULL, 3);
+//	libusb_set_debug(NULL,  LIBUSB_LOG_LEVEL_INFO);
 
 	// find all perseus devices
 	num_devs = libusb_get_device_list(NULL, &list);
@@ -132,7 +141,7 @@ int	perseus_init(void)
 	libusb_free_device_list(list, 1);
 
 	// start the libusb polling thread
-	if (poll_libusb_thread == 0) {
+	if (perseus_list_entries > 0 && poll_libusb_thread_flag == 0) {
 		poll_libusb_thread_stop = FALSE;
 		if ((rc=pthread_create(&poll_libusb_thread, NULL, &poll_libusb_thread_fn, NULL))!=0) {
 			return errorset(PERSEUS_CANTCREAT, "can't create poll libusb thread");
@@ -146,11 +155,11 @@ int	perseus_exit(void)
 {
 	dbgprintf(3,"perseus_exit()");
 
-	if (poll_libusb_thread!=0) {
+	if (poll_libusb_thread_flag != 0) {
 		poll_libusb_thread_stop = TRUE;
 		pthread_join(poll_libusb_thread, NULL);
-		poll_libusb_thread = 0;
-		}
+		poll_libusb_thread_flag = 0;
+	}
 	
 	libusb_exit(NULL);
 
@@ -842,3 +851,17 @@ int perseus_set_attenuator_n (perseus_descr *descr, int nlo)
     }
 }
 
+
+//
+// https://github.com/lorf/csr-spi-ftdi/blob/master/compat.c
+//
+#if defined _WIN32
+/*
+* This fixes linking with precompiled libusb-1.0.18-win and
+* libusb-1.0.19-rc1-win: "undefined reference to __ms_vsnprintf". See:
+* http://sourceforge.net/p/mingw-w64/mailman/mingw-w64-public/thread/4F8CA26A.70103@users.sourceforge.net/
+*/
+#include <stdio.h>
+#include <stdarg.h>
+int (*__ms_vsnprintf)(char *, size_t, const char *, va_list) = &vsnprintf;
+#endif

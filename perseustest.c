@@ -24,7 +24,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>       // needed for sleep()
+#if defined _WIN32
+#define	sleep(x) Sleep((x)*1000)
+#else
+#include <unistd.h>
+#endif
 #include "perseus-sdr.h"
 
 /* TODO:
@@ -43,9 +47,37 @@ int main(int argc, char **argv)
 	perseus_descr *descr;
 	eeprom_prodid prodid;
 	FILE *fout;
+    int i;
+	int sr = 95000;
+	int nb = 4;
+	int bs = 1024;
+	int dbg_lvl = 3;
 
+	for (i=0; i < argc; ++i) {
+		dbgprintf (3,"%d: %s\n", i, argv[i]);
+		if (!strcmp(argv[i],"-s") && (i+1)<argc) {
+		    ++i;
+			if(sscanf(argv[i], "%d", &sr) == 1) ; else sr = 95000;
+		}
+		if (!strcmp(argv[i],"-n") && (i+1)<argc) {
+		    ++i;
+			if(sscanf(argv[i], "%d", &nb) == 1) ; else nb = 4;
+		}
+		if (!strcmp(argv[i],"-b") && (i+1)<argc) {
+		    ++i;
+			if(sscanf(argv[i], "%d", &bs) == 1) ; else bs = 1024;
+		}
+		if (!strcmp(argv[i],"-d") && (i+1)<argc) {
+		    ++i;
+			if(sscanf(argv[i], "%d", &dbg_lvl) == 1) ; else dbg_lvl = 3;
+		}
+	}
+	
 	// Set debug info dumped to stderr to the maximum verbose level
-	perseus_set_debug(3);
+	perseus_set_debug(dbg_lvl);
+	
+	dbgprintf (3,"SAMPLE RATE: %d", sr);
+	dbgprintf (3,"NBUF: %d BUF SIZE: %d TOTAL BUFFER LENGTH: %d", nb, bs, nb*bs);
 
 	// Check how many Perseus receivers are connected to the system
 	num_perseus = perseus_init();
@@ -55,7 +87,7 @@ int main(int argc, char **argv)
 		printf("No Perseus receivers detected\n");
 		perseus_exit();
 		return 0;
-		}
+	}
 
 	// Open the first one...
 	if ((descr=perseus_open(0))==NULL) {
@@ -65,9 +97,10 @@ int main(int argc, char **argv)
 
 	// Download the standard firmware to the unit
 	printf("Downloading firmware...\n");
-	if (perseus_firmware_download(descr,NULL)<0)
+	if (perseus_firmware_download(descr,NULL)<0) {
 		printf("firmware download error: %s", perseus_errorstr());
-
+		return 255;
+	}
 	// Dump some information about the receiver (S/N and HW rev)
 	if (descr->is_preserie == TRUE) 
 		printf("The device is a preserie unit");
@@ -92,6 +125,7 @@ int main(int argc, char **argv)
 
         if (perseus_get_sampling_rates (descr, buf, sizeof(buf)/sizeof(buf[0])) < 0) {
 			printf("get sampling rates error: %s\n", perseus_errorstr());
+			goto main_cleanup;
         } else {
             int i = 0;
             while (buf[i]) {
@@ -103,9 +137,11 @@ int main(int argc, char **argv)
 
 	// Configure the receiver for 2 MS/s operations
 	printf("Configuring FPGA...\n");
-	//if (perseus_set_sampling_rate(descr, 2000000)<0)  // specify the sampling rate value in Samples/second
-	if (perseus_set_sampling_rate_n(descr, 5)<0)        // specify the sampling rate value as ordinal in the vector
+	if (perseus_set_sampling_rate(descr, sr) < 0) {  // specify the sampling rate value in Samples/second
+	//if (perseus_set_sampling_rate_n(descr, 0)<0)        // specify the sampling rate value as ordinal in the vector
 		printf("fpga configuration error: %s\n", perseus_errorstr());
+		goto main_cleanup;
+	}
 
 
 
@@ -225,11 +261,11 @@ main_cleanup:
 }
 
 typedef union {
-	struct __attribute__((__packed__)) {
+	struct {
 		int32_t	i;
 		int32_t	q;
-		} iq;
-	struct __attribute__((__packed__)) {
+		} __attribute__((__packed__)) iq;
+	struct {
 		uint8_t		i1;
 		uint8_t		i2;
 		uint8_t		i3;
@@ -238,7 +274,7 @@ typedef union {
 		uint8_t		q2;
 		uint8_t		q3;
 		uint8_t		q4;
-		};
+		} __attribute__((__packed__)) ;
 } iq_sample;
 
 int user_data_callback(void *buf, int buf_size, void *extra)
