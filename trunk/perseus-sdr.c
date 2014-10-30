@@ -48,10 +48,8 @@ static pthread_t		poll_libusb_thread = { 0 };
 static int 				poll_libusb_thread_flag = 0;
 static int				poll_libusb_thread_stop = FALSE;
 
-#if !defined __MINGW32__
 static char myPath [PATH_MAX+1] = {0};
 static char appName[PATH_MAX+1] = {0}; 
-#endif
 static char appPath[PATH_MAX+1] = {0};
 
 // local function decl -----------------------------------------------
@@ -75,34 +73,44 @@ int	perseus_init(void)
 
 	dbgprintf(3,"perseus_init()");
 
-#if !defined _WIN32
     // try to detect the directory from which the library has been loaded
+#if !defined _WIN32
 	{
 		Dl_info info;
-
+		char sep = '/';
+		
 		if (dladdr( &perseus_init, &info ) != 0) {
-			char *pos;
-			dbgprintf(3,"************** %s", info.dli_fname); 
-
+			dbgprintf(3,"Executable: %s", info.dli_fname); 
 			strcpy (myPath, info.dli_fname);
-			pos = strrchr (myPath, '/');
+		}
+#elif defined _WIN32
+	{
+		char sep = '\\';
+
+		if (GetModuleFileName(NULL, myPath, sizeof(myPath)) == 0) {
+			return errorset(PERSEUS_CANTCREAT, "can't read executable location");
+		} else {
+			dbgprintf(3, "EXE: [%s]", myPath); 
+		}
+#else
+	#error "UNKNOWN ENVIRONMENT"
+#endif
+		if (strlen(myPath)) {
+			char *pos;
+			pos = strrchr (myPath, sep);
 
 			if (pos) {
 				*pos = '\0';
 				strcpy (appPath, myPath);
-				appPath[strlen(myPath)] = '/';
+				appPath[strlen(myPath)] = sep;
 				strcpy (appName, pos+1);
 			}
-
-			dbgprintf(3,"path: %s name: %s", appPath, appName);
 		}
+		dbgprintf(3, "path: [%s] name: [%s]", appPath, appName);
 	}
-#else
-	strcpy (appPath, "./");
-#endif
-
+	
 	libusb_init(NULL);
-//	libusb_set_debug(NULL,  LIBUSB_LOG_LEVEL_INFO);
+	libusb_set_debug(NULL, LIBUSB_LOG_LEVEL_INFO);
 
 	// find all perseus devices
 	num_devs = libusb_get_device_list(NULL, &list);
@@ -219,9 +227,18 @@ perseus_descr *perseus_open(int nDev)
 		return NULL;
 		}
 	
-	libusb_clear_halt(descr->handle, PERSEUS_EP_CMD);
-	libusb_clear_halt(descr->handle, PERSEUS_EP_STATUS);
-	libusb_clear_halt(descr->handle, PERSEUS_EP_DATAIN);
+	if((rc = libusb_clear_halt(descr->handle, PERSEUS_EP_CMD))!=0) {
+		errorset(PERSEUS_LIBUSBERR, "libusb_clear_halt error %d", rc);
+		return NULL;
+		}
+	if((rc = libusb_clear_halt(descr->handle, PERSEUS_EP_STATUS))!=0) {
+		errorset(PERSEUS_LIBUSBERR, "libusb__clear_halt error error %d", rc);
+		return NULL;
+		}
+	if((rc = libusb_clear_halt(descr->handle, PERSEUS_EP_DATAIN))!=0) {
+		errorset(PERSEUS_LIBUSBERR, "libusb__clear_halt error error %d", rc);
+		return NULL;
+		}
 
 	descr->is_preserie 			= FALSE;
 	descr->firmware_downloaded  = FALSE;
@@ -296,7 +313,7 @@ int	perseus_firmware_download(perseus_descr *descr, char *fname)
 
 	perseus_close(descr);
 
-	dbgprintf(3,"re-enumerating usb devices...");
+	dbgprintf(3,"re-enumerating usb devices, please wait...");
 
 	sleep(4);
 
@@ -337,11 +354,15 @@ int	perseus_firmware_download(perseus_descr *descr, char *fname)
 	libusb_ref_device(perseus_list[index].device);
 	libusb_free_device_list(list, 1);
 
-	dbgprintf(3,"try to open the device after re-enumeration...");
+	dbgprintf(3,"Please wait...");
 
+	sleep (4);
+
+	dbgprintf(3,"try to open the device after re-enumeration...");
+	
 	// reopen our device
 	if (perseus_open(descr->index)==NULL)
-		return errorset(PERSEUS_LIBUSBERR, "libusb_open error %d", rc);
+		return errorset(PERSEUS_LIBUSBERR, "perseus_open error %d, reopening.", rc);
 
 	dbgprintf(3,"open successful");
 
