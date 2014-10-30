@@ -112,7 +112,7 @@ int perseus_fx2_ram_write(libusb_device_handle *handle, uint16_t wAddr, char *bu
 int perseus_fx2_read_eeprom(libusb_device_handle *handle, uint16_t addr, void *buf, int bufsize) 
 {
 	int rc;
-	int transferred;
+	int transferred = 0;
 	eeprom_cmd 	 cmd = { PERSEUS_CMD_EEPROMREAD, addr, bufsize };
 	int replysize;
 	eeprom_reply *reply;
@@ -123,7 +123,7 @@ int perseus_fx2_read_eeprom(libusb_device_handle *handle, uint16_t addr, void *b
 									(unsigned char*)&cmd, sizeof(cmd), 
 									&transferred, 
 									FX2_TIMEOUT))<0)
-		return errorset(PERSEUS_IOERROR, "EEPROMREAD command failed. Written %d bytes", transferred);
+		return errorset(PERSEUS_IOERROR, "EEPROMREAD command failed (%d-%s-%s). Written %d bytes", rc, libusb_error_name(rc), libusb_strerror(rc), transferred);
 
 	// Read EEPROM status
 	replysize = sizeof(eeprom_reply_header)+bufsize;
