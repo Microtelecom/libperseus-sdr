@@ -33,6 +33,7 @@ typedef struct _fpga_images {
    const int           speed;
    const int           size;
    const unsigned char *code;
+   const int           osize;
 } FpgaImages;
 
 extern FpgaImages fpgaImgTbl [];

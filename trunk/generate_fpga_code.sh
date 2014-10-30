@@ -29,7 +29,7 @@ cat << ZZZ_PRELUDE_END
 
 // Creation date:       $dt
 // Version:             N/A
-// Author:              N/A (Automatically generated)
+// Author:              (Automatically generated)
 // ------------------------------------------------------------------------------
 
 
@@ -38,7 +38,7 @@ cat << ZZZ_PRELUDE_END
 // Automatically generated at $dt
 // Please don't manually change this file !!!
 //
-#include "fpga_data.h"
+#include <fpga_data.h>
 
 ZZZ_PRELUDE_END
 
@@ -51,8 +51,10 @@ N_FPGA=0
 #
 for x in $RBS
 do
+  # compute file length
   file_size=$(stat -c%s "$x")
 
+  # file name without path
   file=${x##*/}
 
   speed=${file#perseus}
@@ -75,17 +77,18 @@ do
   else
      tag=$(expr $mega \* 1000000)
   fi
-#  echo "********** $file: $speed: $speed2: M: $mega K: $kilo"
+  #echo "////********** $file: $speed: $speed2: M: $mega K: $kilo"
 
   echo "///// $tag"
 
-  echo ""
+  echo "//// [$x]"
   echo "const unsigned char fpga_data_$tag[$file_size] = "
   echo "  { "
-  #echo "     0x00, 0x00,"
-  /usr/bin/hexdump -v -e '1/1 "0x%02x, "' -e '"\n"' "./$x"
+
+  # produce the data in C format
+  cat "$x" | xxd -i
   echo "  };"
-  echo "////"
+  echo "//// end of $file"
   N_FPGA=$(( $N_FPGA + 1 ))
 done
 
@@ -145,13 +148,16 @@ cat tmpfile | sort -g > tmpfile2
 
 while read SPEED FN SIZE FN2
 do
-   # echo ">>>>$SPEED<>$FN<>$SIZE<<<<<<"
+   echo "////  >>>>$SPEED<>$FN<>$SIZE<<<<<<"
+
+   obj_name=$( echo $FN | sed 's/[\.]/_/' )
 
    echo "{"
    echo "    \"$FN\",    "
    echo "    $SPEED,        "
    echo "    $SIZE,  "
    echo "    fpga_data_$SPEED,"
+   echo "    sizeof( fpga_data_$SPEED )"
    echo "},  " 
    echo "////"
 
@@ -171,6 +177,12 @@ echo "int nFpgaImages = $N_FPGA;"
 # emit trailers
 cat << XXXXX_END
 
+/*
+ * Compile and test with the following command:
+ *
+ * gcc -D__TEST_MODULE__ -I. fpga_data.c -o fpga_data_test && ./fpga_data_test
+ */
+
 #if defined __TEST_MODULE__
 #include <stdio.h>
 #include <assert.h>
@@ -185,9 +197,11 @@ int main (void)
    fprintf (stderr, "Cores available: %d\n\n", nFpgaImages);
 
    for (i=0; i < ARRAYSIZE(fpgaImgTbl); ++i) {
-      fprintf (stderr, "name: %20.20s\tspeed: %10.d\tsize: %10.d\n",
-               fpgaImgTbl [i].name, fpgaImgTbl [i].speed, fpgaImgTbl [i].size
+      fprintf (stderr, "name: %20.20s\tspeed: %10.d\tsize: %10.d\tsizeof: %10.d\n",
+               fpgaImgTbl [i].name, fpgaImgTbl [i].speed, fpgaImgTbl [i].size, fpgaImgTbl [i].osize
               );
+      if (fpgaImgTbl [i].size != fpgaImgTbl[i].osize)
+          fprintf (stderr, "FATAL error: declared size %d != from real size: %d \n", fpgaImgTbl [i].size, fpgaImgTbl [i].osize ); 
    }
    return 0;
 }

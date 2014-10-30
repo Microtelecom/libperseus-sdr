@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([libperseus_sdr], [0.3], [andrew@montefusco.com])
+AC_INIT([libperseus_sdr], [0.7], [andrew@montefusco.com])
 
 AM_INIT_AUTOMAKE
 
@@ -14,6 +14,110 @@ AC_CONFIG_MACRO_DIR([build-aux])
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
+
+case $host in
+*-linux* | *-uclinux*)
+	AC_MSG_RESULT([Linux])
+	backend="linux"
+	threads="posix"
+	;;
+*-darwin*)
+	AC_MSG_RESULT([Darwin/Mac OS X])
+	backend="darwin"
+	threads="posix"
+	;;
+*-openbsd*)
+	AC_MSG_RESULT([OpenBSD])
+	backend="openbsd"
+	threads="posix"
+	;;
+*-netbsd*)
+	AC_MSG_RESULT([NetBSD])
+	backend="netbsd"
+	threads="posix"
+	;;
+*-mingw*)
+	AC_MSG_RESULT([Windows])
+	backend="windows"
+	threads="posix"
+	create_import_lib="yes"
+	####AM_CFLAGS="${AM_CFLAGS} -fno-omit-frame-pointer"
+	;;
+*-cygwin*)
+	AC_MSG_RESULT([Cygwin (using Windows backend)])
+	backend="windows"
+	threads="posix"
+	;;
+*-haiku*)
+	AC_MSG_RESULT([Haiku])
+	AC_CONFIG_SUBDIRS([libusb/os/haiku])
+	backend="haiku"
+	threads="posix"
+	;;
+*)
+	AC_MSG_ERROR([unsupported operating system])
+esac
+
+#
+# configure platform
+# On a x86 PC with linux running $host is: i686-pc-linux-gnu
+#
+#
+case $backend in
+
+  *linux*)
+    AC_MSG_NOTICE([Platform LINUX: $host])
+	AC_DEFINE(OS_LINUX, 1, [Linux backend])
+	AC_SUBST(OS_LINUX)
+	
+    XXX_PRFX_DEF="/usr/local"
+    export XXX_PRFX_DEF 
+	
+    # Checks for libraries.
+
+    AC_CHECK_LIB([pthread], [pthread_create])
+    AC_CHECK_LIB([usb-1.0], [libusb_init])
+
+    AC_CHECK_LIB([usb-1.0], [libusb_init], [],
+    [
+         echo "Error! You need to have libusb-1.0 around."
+         echo "Ubuntu/Debian: sudo apt-get install libusb-1.0-0-dev"
+         echo "RedHat:        yum install libusb1 libusb1-devel"
+         exit -1
+    ])
+    AC_CHECK_LIB([dl], [dlopen])
+    AC_MSG_NOTICE([Platform LINUX])
+    ;;
+
+  *darwin*)
+    AC_MSG_NOTICE([Platform MAC OSX: $host])
+    OSX_LDFLAGS=" -L/opt/local/lib"
+    OSX_CFLAGS="-I/opt/local/include"
+    LDFLAGS="$LDFLAGS $OSX_LDFLAGS"
+    CFLAGS="$CFLAGS $OSX_CFLAGS"
+    export LDFLAGS
+    export CFLAGS
+    XXX_PRFX_DEF="/opt/local"
+    export XXX_PRFX_DEF 
+    ;;
+
+  *windows*)
+	AC_DEFINE(OS_WINDOWS, 1, [Windows backend])
+	AC_SUBST(OS_WINDOWS)
+	#LIBS=""
+	LTLDFLAGS="${LTLDFLAGS} -avoid-version -Wl,--add-stdcall-alias"
+	AC_DEFINE([POLL_NFDS_TYPE],[unsigned int],[type of second poll() argument])
+	AC_DEFINE([WINVER], 0x0501, [Oldest Windows version supported])
+    AC_MSG_NOTICE([Platform Windows])
+	;;
+	
+ *-*-*-*)
+    AC_MSG_NOTICE([Platform unknown: $backend])
+    ;;
+
+esac
+
+AS_IF([test "x$XXX_PRFX_DEF" = x], AC_PREFIX_DEFAULT([`pwd`]), AC_PREFIX_DEFAULT(["$XXX_PRFX_DEF"]))
 
 
 #
@@ -65,64 +169,25 @@ case $build_cpu in
 
 esac
 
-#
-# configure platform
-# On a x86 PC with linux running $host is: i686-pc-linux-gnu
-#
-#
-case $host in
-
-  *linux*)
-    AC_MSG_NOTICE([Platform LINUX: $host])
-    XXX_PRFX_DEF="/usr/local"
-    export XXX_PRFX_DEF 
-    ;;
-
-  *darwin*)
-    AC_MSG_NOTICE([Platform MAC OSX: $host])
-    OSX_LDFLAGS=" -L/opt/local/lib"
-    OSX_CFLAGS="-I/opt/local/include"
-    LDFLAGS="$LDFLAGS $OSX_LDFLAGS"
-    CFLAGS="$CFLAGS $OSX_CFLAGS"
-    export LDFLAGS
-    export CFLAGS
-    XXX_PRFX_DEF="/opt/local"
-    export XXX_PRFX_DEF 
-    ;;
-
- *-*-*-*)
-    AC_MSG_NOTICE([Platform unknown: $host])
-    ;;
-
-esac
 
 INST_USER=`echo $(whoami)`
 AC_SUBST(INST_USER)
 
+#
+# defines macros to be used in Makefile.am
+#
+AM_CONDITIONAL(OS_LINUX, test "x$backend" = xlinux)
+AM_CONDITIONAL(OS_WINDOWS, test "x$backend" = xwindows)
 
-AS_IF([test "x$XXX_PRFX_DEF" = x], AC_PREFIX_DEFAULT([`pwd`]), AC_PREFIX_DEFAULT(["$XXX_PRFX_DEF"]))
 
-# Checks for libraries.
-
-AC_CHECK_LIB([pthread], [pthread_create])
-#AC_CHECK_LIB([usb-1.0], [libusb_init])
-
-AC_CHECK_LIB([usb-1.0], [libusb_init], [],
-             [
-              echo "Error! You need to have libusb-1.0 around."
-              echo "Ubuntu/Debian: sudo apt-get install libusb-1.0-0-dev"
-              echo "RedHat:        yum install libusb1 libusb1-devel"
-              exit -1
-             ])
-AC_CHECK_LIB([dl], [dlopen])
 
 #
 # Check for utility used in code generation for FPGA
 #
-AC_CHECK_PROG(HAVE_HEXDUMP, hexdump, true, false)
+AC_CHECK_PROG(HAVE_XXD, xxd, true, false)
 
-if test "x$HAVE_HEXDUMP" = "xfalse"; then
-	AC_MSG_ERROR([*********** hexdump needed but was not found, please install it (bsdmainutils package in Debian/Ubuntu)])
+if test "x$HAVE_XXD" = "xfalse"; then
+	AC_MSG_ERROR([xxd needed but was not found, please install it (bsdmainutils package in Debian/Ubuntu)])
 fi
 
 

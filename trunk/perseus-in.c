@@ -24,7 +24,7 @@
 //                  (nicopal at microtelecom dot it)
 // ------------------------------------------------------------------------------
 
-
+#include <sys/time.h>     // for gettimeofday
 #include "perseus-in.h"
 #include "perseusfx2.h"
 #include "perseuserr.h"
