@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "config.h"
 #include "perseusfx2.h"
 #include "perseuserr.h"
 #include "fpga_data.h"
@@ -64,6 +64,10 @@ typedef	struct __attribute__((__packed__)) {
 	eeprom_reply_header	header;
 	char	data;
 } eeprom_reply;
+
+#if !HAVE_LIBUSB_STRERROR
+char *libusb_strerror (int x){return "libusb_strerror not available in installed libusb 1.0 library.";}
+#endif
 
 // Perseus standard firmware for the Fx2 MCU
 #include "perseus24v11_512.c"
@@ -135,7 +139,7 @@ int perseus_fx2_read_eeprom(libusb_device_handle *handle, uint16_t addr, void *b
 									&transferred, 
 									FX2_TIMEOUT))<0) {
 			free(reply);
-			return errorset(PERSEUS_IOERROR, "eeprom status read failed. Read %d bytes", transferred);
+			return errorset(PERSEUS_IOERROR, "eeprom status read failed (%d-%s-%s). Read %d bytes", rc, libusb_error_name(rc), libusb_strerror(rc), transferred);
 			}
 
 	if (reply->header.op_retcode!=TRUE) {
@@ -186,13 +190,13 @@ int perseus_fx2_download_std_firmware(libusb_device_handle *handle)
 int perseus_fx2_shutdown(libusb_device_handle *handle)
 {
 	int transf;
-
+	int rc;
 	// reset FPGA, disconnect preselection filters and set 30 dB attenuation
 
 	char cmd = PERSEUS_CMD_SHUTDOWN;
 	// Issue a SHUTDOWN command 
-	if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, (unsigned char *)&cmd,1, &transf, FX2_TIMEOUT)<0) 
-		return errorset(PERSEUS_IOERROR, "shutdown command failed");
+	if ((rc=libusb_bulk_transfer(handle, PERSEUS_EP_CMD, (unsigned char *)&cmd,1, &transf, FX2_TIMEOUT))<0) 
+		return errorset(PERSEUS_IOERROR, "shutdown command failed (%d-%s-%s)", rc, libusb_error_name(rc), libusb_strerror(rc));
 
     return errornone(0);
 }
@@ -200,11 +204,12 @@ int perseus_fx2_shutdown(libusb_device_handle *handle)
 int	perseus_fx2_set_porte(libusb_device_handle *handle, uint8_t porte)
 {
 	int transferred;
+	int rc;
 	char cmd[2] = { PERSEUS_CMD_FX2PORTE, porte };
 
 	// Issue a FX2PORTE command
-	if (libusb_bulk_transfer(handle, PERSEUS_EP_CMD, (unsigned char *)cmd, 2, &transferred, FX2_TIMEOUT)<0) 
-		return errorset(PERSEUS_IOERROR, "FX2PORTE command failed");
+	if ((rc=libusb_bulk_transfer(handle, PERSEUS_EP_CMD, (unsigned char *)cmd, 2, &transferred, FX2_TIMEOUT))<0) 
+		return errorset(PERSEUS_IOERROR, "FX2PORTE command failed (%d-%s-%s)", rc, libusb_error_name(rc), libusb_strerror(rc));
 
 	return errornone(0);
 }

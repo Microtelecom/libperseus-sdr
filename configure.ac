@@ -86,6 +86,10 @@ case $backend in
          exit -1
     ])
     AC_CHECK_LIB([dl], [dlopen])
+
+    # check for specific functions
+    AC_CHECK_FUNCS([libusb_strerror], [],[])
+
     AC_MSG_NOTICE([Platform LINUX])
     ;;
 
