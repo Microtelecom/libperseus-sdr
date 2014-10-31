@@ -110,8 +110,26 @@ case $backend in
 	AC_SUBST(OS_WINDOWS)
 	#LIBS=""
 	LTLDFLAGS="${LTLDFLAGS} -avoid-version -Wl,--add-stdcall-alias"
+	
+	CFLAGS="$CFLAGS -I../libusb-1.0.last/"
+    CXXFLAGS="$CXXFLAGS -I../libusb-1.0.last/"
+    LDFLAGS="$LDFLAGS -L../libusb-1.0.last/libusb/"
+
+	AC_CHECK_HEADERS([libusb-1.0/libusb.h])
+	
+	#### AC_CHECK_LIB([usb-1.0], [libusb_init])
+    AC_CHECK_LIB([usb-1.0], [libusb_init], [],
+    [
+         echo "Error! You need to have libusb-1.0 around."
+		 echo "Take a look at README.Windows"
+         exit -1
+    ])
+
+    # check for specific functions
+    AC_CHECK_FUNCS([libusb_strerror], [],[])
+	
+	
 	AC_DEFINE([POLL_NFDS_TYPE],[unsigned int],[type of second poll() argument])
-	AC_DEFINE([WINVER], 0x0501, [Oldest Windows version supported])
     AC_MSG_NOTICE([Platform Windows])
 	;;
 	
