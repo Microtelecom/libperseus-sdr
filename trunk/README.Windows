@@ -1,0 +1,43 @@
+1. How to compile on Windows
+----------------------------
+
+In order to natively compile on Windows, the following prerequisite have to be
+fullfilled:
+
+1.1) install MinGW environment according to instructions  here:
+
+http://www.mingw.org/wiki/Getting_Started
+
+2.2) install the pthreads_win32 source and compile it; the source is found here:
+
+https://www.sourceware.org/pthreads-win32/
+
+take care to compile it under your home directory, otherwise you have to
+change the configure.ac in libperseus-lib accordingly.
+
+
+2.3) download latest libusb-1.0 source from git://git.libusb.org/libusb.git 
+and build (prefix as per http://www.mingw.org/wiki/MSYS)
+
+cd 
+git clone git://git.libusb.org/libusb.git
+cd libusb
+./autogen.sh
+./configure --prefix=/mingw
+make
+make install
+
+
+2.4) install sources getting the zipped file at
+
+svn checkout http://libperseus-sdr.googlecode.com/svn/trunk/ libperseus-sdr-read-only
+
+
+2.5) open the MinGW (MSYS) shell, make the sources directory current and type
+
+make
+
+if the process ends correctly, you should find the perseustest.exe in the same directory
+
+
+2.6) install a libusb signed driver with Zadig (TBD)

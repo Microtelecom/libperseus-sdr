@@ -15,8 +15,8 @@ if OS_WINDOWS
 # http://stackoverflow.com/questions/7789668/why-would-the-size-of-a-packed-structure-be-different-on-linux-and-windows-when
 #
 AM_CFLAGS  = -Wall -O3 -mno-ms-bitfields -I../libusb-1.0.last/ -I../pthreads -DPTW32_STATIC_LIB -D__CLEANUP_C   
-AM_LDLIBS  = -lpthreadGC2 -lusb-1.0 -ldl 
-AM_LDFLAGS = -L../pthreads -L../libusb-1.0.last/libusb/ -lpthreadGC2 -lusb-1.0 -ldl
+AM_LDLIBS  = -lpthreadGC2 -ldl 
+AM_LDFLAGS = -L../pthreads -lpthreadGC2 -ldl
 endif
 
 
