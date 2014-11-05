@@ -3,7 +3,7 @@ ACLOCAL_AMFLAGS = -I build-aux
 
 if OS_LINUX
 # flags you want to pass to the C compiler & linker
-AM_CFLAGS  =  -Wall -O3 @SIMD_FLAGS@
+AM_CFLAGS  =  -Wall -O3 @SIMD_FLAGS@ -DSVN_REVISION=\"@SVNREV@\"
 AM_LDFLAGS =
 AM_LIBS    = -lusb1.0 -ldl
 endif
@@ -14,7 +14,7 @@ if OS_WINDOWS
 # -mno-ms-bitfields needed in order to properly align fields in structures 
 # http://stackoverflow.com/questions/7789668/why-would-the-size-of-a-packed-structure-be-different-on-linux-and-windows-when
 #
-AM_CFLAGS  = -Wall -O3 -mno-ms-bitfields -I../libusb-1.0.last/ -I../pthreads -DPTW32_STATIC_LIB -D__CLEANUP_C   
+AM_CFLAGS  = -Wall -O3 -DSVN_REVISION=\"@SVNREV@\" -mno-ms-bitfields -I../libusb-1.0.last/ -I../pthreads -DPTW32_STATIC_LIB -D__CLEANUP_C   
 AM_LDLIBS  = -lpthreadGC2 -ldl 
 AM_LDFLAGS = -L../pthreads -lpthreadGC2 -ldl
 endif
@@ -70,7 +70,7 @@ fpga_data.c: $(srcdir)/generate_fpga_code.sh $(dist_pkgdata_DATA) $(dist_check_D
 #
 udevrule_DATA = $(top_srcdir)/95-perseus.rules
 udevruledir = $(bindir)
-EXTRA_DIST = $(top_srcdir)/95-perseus.rules
+EXTRA_DIST = $(top_srcdir)/95-perseus.rules SVNREV README.Windows
 
 install-data-hook:
 	-cp $(bindir)/95-perseus.rules /etc/udev/rules.d/ ; groupadd perseususb ; echo $(INST_USER) ;usermod -a -G perseususb $(INST_USER) ; udevadm control --reload-rules
@@ -78,3 +78,5 @@ install-data-hook:
 uninstall-hook:
 	-rm /etc/udev/rules.d/95-perseus.rules ; groupdel perseususb ; udevadm control --reload-rules
 
+
+distdir = $(PACKAGE)-$(VERSION).$(SVNREV)

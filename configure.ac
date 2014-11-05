@@ -9,11 +9,19 @@ AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([perseuserr.h])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([build-aux])
+AM_SILENT_RULES
 
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
+
+SVNREV=`(svnversion $srcdir | sed 's/:.*//') 2>/dev/null`
+if { ! ( svnversion ) >/dev/null 2>&1 || test "$SVNREV" = "exported"; } ;
+    then SVNREV=`cat $srcdir/SVNREV`
+    else echo $SVNREV>$srcdir/SVNREV
+fi
+AC_SUBST(SVNREV)
 
 case $host in
 *-linux* | *-uclinux*)

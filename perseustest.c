@@ -31,6 +31,12 @@
 #endif
 #include "perseus-sdr.h"
 
+#if defined SVN_REVISION
+const char *svn_revision = SVN_REVISION;
+#else
+const char *svn_revision ="UNKNOWN";
+#endif
+
 /* TODO:
 
 - Verify that control functions are thread safe (no mutex used yet)
@@ -76,8 +82,9 @@ int main(int argc, char **argv)
 	// Set debug info dumped to stderr to the maximum verbose level
 	perseus_set_debug(dbg_lvl);
 	
-	dbgprintf (3,"SAMPLE RATE: %d", sr);
-	dbgprintf (3,"NBUF: %d BUF SIZE: %d TOTAL BUFFER LENGTH: %d", nb, bs, nb*bs);
+    printf ("Revision: %s\n", svn_revision);
+	printf ("SAMPLE RATE: %d\n", sr);
+	printf ("NBUF: %d BUF SIZE: %d TOTAL BUFFER LENGTH: %d\n", nb, bs, nb*bs);
 
 	// Check how many Perseus receivers are connected to the system
 	num_perseus = perseus_init();
