@@ -27,7 +27,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 #include "perseusfx2.h"
 #include "perseuserr.h"
 #include "fpga_data.h"
