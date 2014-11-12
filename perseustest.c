@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 	FILE *fout;
     int i;
 	int sr = 95000;
-	int nb = 4;
+	int nb = 6;
 	int bs = 1024;
 	int dbg_lvl = 3;
 
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
 		}
 		if (!strcmp(argv[i],"-n") && (i+1)<argc) {
 		    ++i;
-			if(sscanf(argv[i], "%d", &nb) == 1) ; else nb = 4;
+			if(sscanf(argv[i], "%d", &nb) == 1) ; else nb = 6;
 		}
 		if (!strcmp(argv[i],"-b") && (i+1)<argc) {
 		    ++i;
@@ -230,7 +230,7 @@ int main(int argc, char **argv)
 	// We start the acquisition passing our callback and its params 
 	// (in this case the fout file handle we just open)	
 	printf("Starting async data acquisition... \n");
-	if (perseus_start_async_input(descr,16320,user_data_callback,fout)<0) {
+	if (perseus_start_async_input(descr,nb*bs,user_data_callback,fout)<0) {
 		printf("start async input error: %s\n", perseus_errorstr());
 		goto main_cleanup;
 		}

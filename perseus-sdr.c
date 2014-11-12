@@ -170,6 +170,9 @@ int	perseus_exit(void)
 	}
 	
 	libusb_exit(NULL);
+	perseus_list_entries 	= 0;
+	poll_libusb_thread_flag = 0;
+	poll_libusb_thread_stop = FALSE;
 
 	return errornone(0);
 }
@@ -227,18 +230,24 @@ perseus_descr *perseus_open(int nDev)
 		return NULL;
 		}
 	
-	if((rc = libusb_clear_halt(descr->handle, PERSEUS_EP_CMD))!=0) {
-		errorset(PERSEUS_LIBUSBERR, "libusb_clear_halt error %d", rc);
+	int rc1, rc2, rc3;
+	if((rc1 = libusb_clear_halt(descr->handle, PERSEUS_EP_CMD))!=0) {
+		errorset(PERSEUS_LIBUSBERR, "libusb_clear_halt error %d", rc1);
 		}
-	if((rc = libusb_clear_halt(descr->handle, PERSEUS_EP_STATUS))!=0) {
-		errorset(PERSEUS_LIBUSBERR, "libusb__clear_halt error error %d", rc);
+	if((rc2 = libusb_clear_halt(descr->handle, PERSEUS_EP_STATUS))!=0) {
+		errorset(PERSEUS_LIBUSBERR, "libusb__clear_halt error error %d", rc2);
 		}
-	if((rc = libusb_clear_halt(descr->handle, PERSEUS_EP_DATAIN))!=0) {
-		errorset(PERSEUS_LIBUSBERR, "libusb__clear_halt error error %d", rc);
+	if((rc3 = libusb_clear_halt(descr->handle, PERSEUS_EP_DATAIN))!=0) {
+		errorset(PERSEUS_LIBUSBERR, "libusb__clear_halt error error %d", rc3);
 		}
 
 	descr->is_preserie 			= FALSE;
-	descr->firmware_downloaded  = FALSE;
+	
+	if (rc1 == 0 && rc2 == 0 && rc3 == 0)
+		descr->firmware_downloaded  = TRUE;
+	else
+		descr->firmware_downloaded  = FALSE;
+	
 	descr->fpga_configured  	= FALSE;
 	descr->adc_clk_freq			= PERSEUS_ADC_CLK_FREQ;
 
@@ -296,6 +305,29 @@ int	perseus_firmware_download(perseus_descr *descr, char *fname)
 	if (descr->handle==NULL) 
 		return errorset(PERSEUS_DEVNOTOPEN, "device not open");
 
+	if (descr->firmware_downloaded == TRUE) {
+	
+		descr->presel_flt_id        = PERSEUS_FLT_UNDEF;
+
+		dbgprintf(3,"Firmware found !!!! Reading device eeprom...");
+
+		if (perseus_fx2_read_eeprom(descr->handle, 
+									PERSEUS_EEPROMADR_PRODID,
+									&descr->product_id,
+									sizeof(eeprom_prodid))<0) 
+			return errorset(PERSEUS_EEPROMREAD, "failed to read device eeprom");
+
+		dbgprintf(3,"read eeprom successful");
+
+		if (descr->product_id.prodcode!=PERSEUS_PRODCODE) {
+			descr->is_preserie = TRUE;
+			dbgprintf(3,"Pre-production unit found");
+		}
+		return errornone(0);
+	}
+
+	dbgprintf(3,"perseus_firmware_download(%p,%s)",descr,(fname?fname:"Null"));
+	
 	descr->firmware_downloaded  = FALSE;
 	descr->fpga_configured  	= FALSE;
 
@@ -571,10 +603,10 @@ int	perseus_start_async_input(perseus_descr *descr,
 	if (buffersize>16320) 
 		return errorset(PERSEUS_ERRPARAM, "max libusb bulk buffer size is 16320 bytes");
 
-	if ((buffersize%510)!=0) 
-		return errorset(PERSEUS_ERRPARAM, "buffer size should be an integer multiple of 510 bytes (85 IQ samples)");
+	if ((buffersize%6144)!=0) 
+		return errorset(PERSEUS_ERRPARAM, "buffer size should be an integer multiple of 6144 bytes (1024 I/Q samples)");
 
-	// create and submit the datain transfer queue
+	// create and submit the data in transfer queue
 	if ((rc=perseus_input_queue_create(&descr->input_queue, 8, descr->handle, buffersize, callback, cb_extra))<0)
 		dbgprintf(0,"input transfer queue creation failed");
 

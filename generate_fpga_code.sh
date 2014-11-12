@@ -54,6 +54,13 @@ do
   # compute file length
   file_size=$(stat -c%s "$x")
 
+  
+  ### ->  # removes the shortest match from the beginning
+  ### ->  ## removes the longest match from the beginning
+  ### ->  % removes the shortest match from the end
+  ### ->  %% removes the longest match from the end
+
+  
   # file name without path
   file=${x##*/}
 
@@ -64,22 +71,28 @@ do
   kilo=${speed2%%k*}
 
   tag=""
-
-  if [ -n "$( echo $mega | sed 's/^[+-]//;s/[0-9]//g;s/\.//' )" ] ; then
+  
+  if [ -n "$( echo $mega | sed 's/^[+-]//;s/[0-9]//g;s/\.//;s/d//' )" ] ; then
      
-     if [ -n "$( echo $kilo | sed 's/^[+-]//;s/[0-9]//g;s/\.//' )" ] ; then
-         exit 255
-     else
-         tag=$(expr $kilo \* 1000)
-     fi
-
-
+    if [ -n "$( echo $kilo | sed 's/^[+-]//;s/[0-9]//g;s/\.//' )" ] ; then
+		echo "FATAL: UNEXPECTED: $kilo"
+        exit 255
+    else
+        tag=$(expr $kilo \* 1000)
+    fi
+	 
   else
-     tag=$(expr $mega \* 1000000)
+	### search for a 'd' embedded
+	if [ -n "$( echo $mega | sed 's/^[+-]//;s/[0-9]//g;s/\.//' )" ] ; then
+		dd=${mega#*d}
+		ii=${mega%d*}
+	    tag=$(expr $ii \* 1000000 + $dd \* 100000 )
+	else	
+		tag=$(expr $mega \* 1000000)
+	fi
   fi
-  #echo "////********** $file: $speed: $speed2: M: $mega K: $kilo"
-
-  echo "///// $tag"
+  
+  echo "////********** $file: s: $speed s2: $speed2 M: $mega K: $kilo $tag"
 
   echo "//// [$x]"
   echo "const unsigned char fpga_data_$tag[$file_size] = "
@@ -122,20 +135,27 @@ do
 
   tag=""
 
-  if [ -n "$( echo $mega | sed 's/^[+-]//;s/[0-9]//g;s/\.//' )" ] ; then
+  if [ -n "$( echo $mega | sed 's/^[+-]//;s/[0-9]//g;s/\.//;s/d//' )" ] ; then
      
-     if [ -n "$( echo $kilo | sed 's/^[+-]//;s/[0-9]//g;s/\.//' )" ] ; then
-         exit 255
+    if [ -n "$( echo $kilo | sed 's/^[+-]//;s/[0-9]//g;s/\.//' )" ] ; then
+ 		echo "FATAL: UNEXPECTED: $kilo"
+        exit 255
      else
-         tag=$(expr $kilo \* 1000)
-     fi
-
+        tag=$(expr $kilo \* 1000)
+    fi
 
   else
-     tag=$(expr $mega \* 1000000)
+	### search for a 'd' embedded
+	if [ -n "$( echo $mega | sed 's/^[+-]//;s/[0-9]//g;s/\.//' )" ] ; then
+		dd=${mega#*d}
+		ii=${mega%d*}
+	    tag=$(expr $ii \* 1000000 + $dd \* 100000 )
+	else	
+		tag=$(expr $mega \* 1000000)
+	fi
   fi
   
-  #####echo "********** $file: $speed: $speed2: M: $mega K: $kilo"
+  ##echo "********** $file: $speed: $speed2: M: $mega K: $kilo"
   echo "$tag $file $file_size $x" >> tmpfile
 
 done
