@@ -72,7 +72,11 @@ char *libusb_strerror (int x){return "libusb_strerror not available in installed
 #endif
 
 // Perseus standard firmware for the Fx2 MCU
-#include "perseus24v11_512.c"
+// NP20141111 -- This was the firmware version with 510 bytes endpoints
+//#include "perseus24v11_512.c"
+
+// NP20141111 ++ This is the lastest firmware version (24v41_512) with 512 bytes endpoints
+#include "perseus24v41_512.c"
 
 int perseus_fx2_reset(libusb_device_handle *handle, uint8_t reset) 
 {
@@ -80,16 +84,19 @@ int perseus_fx2_reset(libusb_device_handle *handle, uint8_t reset)
 	// Issue a FX2_BM_VENDOR_REQUEST requestType, FX2_REQUEST_FIRMWARE_LOAD request 
 	// with wValue FX2_ADDR_CPUCS
 	// and data = reset line status (1:hold CPU reset, 0: Leave CPU reset)
+	int rc;
 
-	if (libusb_control_transfer (handle, 
+	rc = libusb_control_transfer (handle, 
 								FX2_BM_VENDOR_REQUEST,
 								FX2_REQUEST_FIRMWARE_LOAD,
 								FX2_ADDR_CPUCS,
 								0,
 								&reset,
 								1,
-								FX2_TIMEOUT)<0) 
-			return errorset(PERSEUS_IOERROR, "fx2 reset(%d) failed",(uint16_t)reset);
+								FX2_TIMEOUT);
+	if (rc<0) 
+		return errorset(PERSEUS_IOERROR, "fx2 reset(%d) failed, (%d-%s-%s).",(uint16_t)reset, 
+						rc, libusb_error_name(rc), libusb_strerror(rc));
 
 	return errornone(0);
 }
@@ -180,9 +187,14 @@ int perseus_fx2_download_std_firmware(libusb_device_handle *handle)
 
 	dbgprintf(3,"fx2 cpu ram write ok...");
 
+// NP20141111 -- We dont check the return status anymore
+// as it looks that new USB3.0 Platforms do not handle the call as in previous versions
 	// Leave Fx2 CPU reset state
-	if ((rc=perseus_fx2_reset(handle,FALSE))<0)
-		return rc;
+	//	if ((rc=perseus_fx2_reset(handle,FALSE))<0)
+	//	return rc;
+
+// NP20141111 -- We simply make the call and ignore the result
+	perseus_fx2_reset(handle,FALSE);
 
 	dbgprintf(3,"fx2 cpu reset(0) ok...");
 

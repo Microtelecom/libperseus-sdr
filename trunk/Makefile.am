@@ -43,7 +43,7 @@ hdrdir = $(includedir)
 
 hdr_HEADERS = perseus-sdr.h perseusfx2.h perseus-in.h perseuserr.h
 
-dist_pkgdata_DATA = $(srcdir)/generate_fpga_code.sh $(srcdir)/perseus24v11_512.c $(udev_DATA)
+dist_pkgdata_DATA = $(srcdir)/generate_fpga_code.sh $(srcdir)/perseus24v41_512.c $(udev_DATA)
 
 #
 # FPGA images
