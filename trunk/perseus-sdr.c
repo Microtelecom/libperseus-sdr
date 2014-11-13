@@ -181,6 +181,7 @@ perseus_descr *perseus_open(int nDev)
 {
 	perseus_descr *descr;
 	int rc;
+	int rc1, rc2, rc3;
 
 	dbgprintf(3,"perseus_open(%d)",nDev);
 
@@ -230,16 +231,9 @@ perseus_descr *perseus_open(int nDev)
 		return NULL;
 		}
 	
-	int rc1, rc2, rc3;
-	if((rc1 = libusb_clear_halt(descr->handle, PERSEUS_EP_CMD))!=0) {
-		errorset(PERSEUS_LIBUSBERR, "libusb_clear_halt error %d", rc1);
-		}
-	if((rc2 = libusb_clear_halt(descr->handle, PERSEUS_EP_STATUS))!=0) {
-		errorset(PERSEUS_LIBUSBERR, "libusb__clear_halt error error %d", rc2);
-		}
-	if((rc3 = libusb_clear_halt(descr->handle, PERSEUS_EP_DATAIN))!=0) {
-		errorset(PERSEUS_LIBUSBERR, "libusb__clear_halt error error %d", rc3);
-		}
+	rc1 = libusb_clear_halt(descr->handle, PERSEUS_EP_CMD);
+	rc2 = libusb_clear_halt(descr->handle, PERSEUS_EP_STATUS);
+	rc3 = libusb_clear_halt(descr->handle, PERSEUS_EP_DATAIN);
 
 	descr->is_preserie 			= FALSE;
 	
@@ -279,6 +273,11 @@ int perseus_close(perseus_descr *descr)
 	else {
 		dbgprintf(3,"done");
 		}
+		
+	// AM 20141112
+	// need to decrement the reference counter in order to completely free
+	// libusb-1,0 internal resources
+	libusb_unref_device(descr->device);
 	
 	dbgprintf(3,"closing device handle...");
 	libusb_close(descr->handle);
@@ -381,7 +380,11 @@ int	perseus_firmware_download(perseus_descr *descr, char *fname)
 
 	// free all descriptor but our
 	libusb_ref_device(perseus_list[index].device);
-	libusb_free_device_list(list, 1);
+
+	// AM20141112
+	// libusb_free_device_list moved after the open 
+	// as per http://libusb.sourceforge.net/api-1.0/group__dev.html#details// 
+	//libusb_free_device_list(list, 1);
 
 	dbgprintf(3,"Please wait...");
 
@@ -390,6 +393,8 @@ int	perseus_firmware_download(perseus_descr *descr, char *fname)
 	// reopen our device
 	if (perseus_open(descr->index)==NULL)
 		return errorset(PERSEUS_LIBUSBERR, "perseus_open error %d, reopening.", rc);
+
+	libusb_free_device_list(list, 1);
 
 	dbgprintf(3,"open successful");
 	
