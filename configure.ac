@@ -17,9 +17,9 @@ AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 
 SVNREV=`(svnversion $srcdir | sed 's/:.*//') 2>/dev/null`
-if { ! ( svnversion ) >/dev/null 2>&1 || test "$SVNREV" = "exported"; } ;
+if { ! ( svnversion ) >/dev/null 2>&1 || test "$SVNREV" = "exported" || test "$SVNREV" = "Unversioned directory" || test "$SVNREV" = "Unversioned file"; } ;
     then SVNREV=`cat $srcdir/SVNREV`
-    else echo $SVNREV>$srcdir/SVNREV
+    else echo $SVNREV | sed 's/ /_/' >$srcdir/SVNREV
 fi
 AC_SUBST(SVNREV)
 
