@@ -5,7 +5,7 @@
 If you want just compile the package, and are not interested to contribute, install the prerequisite packages and build from sources as follows:
 
 {{{
-sudo apt-get install gcc g++ make libusb-1.0-0-dev
+sudo apt-get install wget gcc g++ make libusb-1.0-0-dev
 wget http://www.montefusco.com/perseus/libperseus_sdr-0.7.42.tar.gz
 tar -zxvf libperseus_sdr-0.7.42.tar.gz
 cd libperseus_sdr-0.7.42/
