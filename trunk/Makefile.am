@@ -49,7 +49,7 @@ dist_pkgdata_DATA = $(srcdir)/generate_fpga_code.sh $(srcdir)/perseus24v41_512.c
 # FPGA images
 # have to be distributed in tarball but not installed
 #
-dist_check_DATA = $(srcdir)/perseus125k24v21.rbs  $(srcdir)/perseus192k24v31.rbs  $(srcdir)/perseus1m24v21.rbs  $(srcdir)/perseus250k24v21.rbs  $(srcdir)/perseus2m24v21.rbs  $(srcdir)/perseus48k24v31.rbs  $(srcdir)/perseus500k24v21.rbs  $(srcdir)/perseus95k24v31.rbs  $(srcdir)/perseus96k24v31.rbs 
+dist_check_DATA = $(srcdir)/perseus125k24v21.rbs  $(srcdir)/perseus192k24v31.rbs  $(srcdir)/perseus1m24v21.rbs  $(srcdir)/perseus250k24v21.rbs  $(srcdir)/perseus2m24v21.rbs  $(srcdir)/perseus48k24v31.rbs  $(srcdir)/perseus500k24v21.rbs  $(srcdir)/perseus95k24v31.rbs  $(srcdir)/perseus96k24v31.rbs  $(srcdir)/perseus1d6m24v21.rbs
 
 #
 # Generate source file for FPGA code
