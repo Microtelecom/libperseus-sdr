@@ -589,7 +589,7 @@ int	perseus_start_async_input(perseus_descr *descr,
 								perseus_input_callback callback, 
 								void *cb_extra)
 {
-	int rc;
+	int rc, maxps;
 
 	dbgprintf(3,"perseus_start_async_input(%p,%d,...)",descr, buffersize);
 
@@ -611,8 +611,22 @@ int	perseus_start_async_input(perseus_descr *descr,
 	if (buffersize>16320) 
 		return errorset(PERSEUS_ERRPARAM, "max libusb bulk buffer size is 16320 bytes");
 
-	if ((buffersize%6144)!=0) 
-		return errorset(PERSEUS_ERRPARAM, "buffer size should be an integer multiple of 6144 bytes (1024 I/Q samples)");
+	maxps = libusb_get_max_packet_size (descr->device, PERSEUS_EP_DATAIN);	
+
+    dbgprintf(3,"Max packet size on endpoint 0x%02x: %d", PERSEUS_EP_DATAIN, maxps);
+
+	switch (maxps) {
+		case 512: 
+			if ((buffersize%6144)!=0) 
+				return errorset(PERSEUS_BUFFERSIZE, "buffer size should be an integer multiple of 6144 bytes (1024 I/Q samples)");
+			break;
+		case 510:
+			if ((buffersize%510)!=0)
+				return errorset(PERSEUS_BUFFERSIZE, "buffer size should be an integer multiple of 510 bytes (85 IQ samples)");
+			break;
+		default:
+			return errorset(PERSEUS_ERRPARAM, "Unexpected max packet size: %d", maxps);
+    }
 
 	// create and submit the data in transfer queue
 	if ((rc=perseus_input_queue_create(&descr->input_queue, 8, descr->handle, buffersize, callback, cb_extra))<0)
