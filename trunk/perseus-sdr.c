@@ -153,15 +153,17 @@ int	perseus_init(void)
 		poll_libusb_thread_stop = FALSE;
 		if ((rc=pthread_create(&poll_libusb_thread, NULL, &poll_libusb_thread_fn, NULL))!=0) {
 			return errorset(PERSEUS_CANTCREAT, "can't create poll libusb thread");
-			}
+		} else {
+			poll_libusb_thread_flag = 1;
 		}
+	}
 
 	return errornone(perseus_list_entries);
 }
 
 int	perseus_exit(void)
 {
-	dbgprintf(3,"perseus_exit()");
+	dbgprintf(3,"perseus_exit(): poll_libusb_thread_flag=%d", poll_libusb_thread_flag);
 
 	if (poll_libusb_thread_flag != 0) {
 		poll_libusb_thread_stop = TRUE;
@@ -170,6 +172,7 @@ int	perseus_exit(void)
 	}
 	
 	libusb_exit(NULL);
+	dbgprintf(5,"after libusb_exit");
 	perseus_list_entries 	= 0;
 	poll_libusb_thread_flag = 0;
 	poll_libusb_thread_stop = FALSE;
@@ -276,7 +279,7 @@ int perseus_close(perseus_descr *descr)
 		
 	// AM 20141112
 	// need to decrement the reference counter in order to completely free
-	// libusb-1,0 internal resources
+	// libusb-1.0 internal resources
 	libusb_unref_device(descr->device);
 	
 	dbgprintf(3,"closing device handle...");
