@@ -43,6 +43,35 @@ const char *svn_revision ="UNKNOWN";
 
 */
 
+
+void print_usage ()
+{
+	fprintf (stderr, "Usage:\n");
+	fprintf (stderr, "-s ............ sample rate (");
+
+	{
+
+		int buf[BUFSIZ];
+
+		if (perseus_get_sampling_rates (0, buf, sizeof(buf)/sizeof(buf[0])) < 0) {
+			printf("get sampling rates error: %s\n", perseus_errorstr());
+		} else {
+			int i = 0;
+			while (buf[i]) {
+				fprintf(stderr, " %d", buf[i]);
+				i++;
+			}
+		}
+		fprintf (stderr, ")\n");
+	}
+	fprintf (stderr, "-n ............ number of buffers\n");
+	fprintf (stderr, "-b ............ buffer size in bytes\n");
+	fprintf (stderr, "-d ............ debug level (0..9, -1  no debug)\n");
+	fprintf (stderr, "-a ............ don't test attenuators\n");
+	fprintf (stderr, "-t ............ acquisition test duration in seconds (default 10)\n");
+	fprintf (stderr, "-h ............ this help\n");
+}
+
 // The function that will be called by the perseus library when a 
 // data buffer from the Perseus input data endpoint is available
 static int user_data_callback(void *buf, int buf_size, void *extra);
@@ -58,6 +87,8 @@ int main(int argc, char **argv)
 	int nb = 6;
 	int bs = 1024;
 	int dbg_lvl = 3;
+	int no_ta = 0;
+	int test_time = 10;
 
 	for (i=0; i < argc; ++i) {
 		dbgprintf (3,"%d: %s\n", i, argv[i]);
@@ -77,6 +108,18 @@ int main(int argc, char **argv)
 		    ++i;
 			if(sscanf(argv[i], "%d", &dbg_lvl) == 1) ; else dbg_lvl = 3;
 		}
+		if (!strcmp(argv[i],"-a")) {
+			no_ta = 1;
+		}
+		if (!strcmp(argv[i],"-t") && (i+1)<argc) {
+		    ++i;
+			if(sscanf(argv[i], "%d", &test_time) == 1) ; else test_time = 10;
+		}
+		if (!strcmp(argv[i],"-h")) {
+		    print_usage ();
+			exit (255);
+		}
+
 	}
 	
 	// Set debug info dumped to stderr to the maximum verbose level
@@ -194,17 +237,18 @@ int main(int argc, char **argv)
 
     perseus_set_attenuator_in_db(descr, 33); // Bad value !!!
 
-	perseus_set_attenuator_n(descr, 0);
-	sleep(1);
-	perseus_set_attenuator_n(descr, 1);
-	sleep(1);
-	perseus_set_attenuator_n(descr, 2);
-	sleep(1);
-	perseus_set_attenuator_n(descr, 3);
-	sleep(1);
-	perseus_set_attenuator_n(descr, 0);
-	sleep(1);
-
+	if (no_ta == 0) {
+		perseus_set_attenuator_n(descr, 0);
+		sleep(1);
+		perseus_set_attenuator_n(descr, 1);
+		sleep(1);
+		perseus_set_attenuator_n(descr, 2);
+		sleep(1);
+		perseus_set_attenuator_n(descr, 3);
+		sleep(1);
+		perseus_set_attenuator_n(descr, 0);
+		sleep(1);
+	}
 	// Enable ADC Dither, Disable ADC Preamp
 	perseus_set_adc(descr, TRUE, FALSE);
 
@@ -240,7 +284,7 @@ int main(int argc, char **argv)
 	// We wait a 10 s time interval.
 	// The user data callback we supplied to perseus_start_async_input 
 	// is being called meanwhile.
-	for (k=0;k<10;k++) {
+	for (k=0;k<test_time;k++) {
 		fprintf(stderr, ".");
 		sleep(1);
 	}
