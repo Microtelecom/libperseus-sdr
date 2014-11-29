@@ -34,7 +34,7 @@
 // We set it at 80 ms so that input transfers (should) never timeout
 #define PERSEUS_INPUT_TIMEOUT	80
 
-static void input_queue_callback(struct libusb_transfer *transfer);
+static void LIBUSB_CALL input_queue_callback(struct libusb_transfer *transfer);
 
 int  perseus_input_queue_create(
 					perseus_input_queue *queue, 
@@ -184,7 +184,7 @@ int  perseus_input_queue_free(perseus_input_queue *queue)
 	return errornone(0);
 }
 
-static void input_queue_callback(struct libusb_transfer *transfer)
+static void LIBUSB_CALL input_queue_callback(struct libusb_transfer *transfer)
 {
 	perseus_input_transfer *input_transfer = (perseus_input_transfer *)transfer->user_data;
 	perseus_input_queue_ptr input_queue    = input_transfer->queue;
