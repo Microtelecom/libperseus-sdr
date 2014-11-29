@@ -32,6 +32,8 @@
 #define __USE_GNU
 #if !defined(_WIN32)
 #include <dlfcn.h>
+#else
+#include <windows.h>
 #endif
 
 #include "perseus-sdr.h"
@@ -44,7 +46,11 @@
 
 static perseus_descr	perseus_list[PERSEUS_MAX_DESCR];
 static int				perseus_list_entries 	= 0;
+#if !defined(_WIN32)
 static pthread_t		poll_libusb_thread = { 0 };
+#else
+static HANDLE			poll_libusb_thread = NULL;
+#endif
 static int 				poll_libusb_thread_flag = 0;
 static int				poll_libusb_thread_stop = FALSE;
 
@@ -54,7 +60,11 @@ static char appPath[PATH_MAX+1] = {0};
 
 // local function decl -----------------------------------------------
 
+#if !defined _WIN32
 static void *poll_libusb_thread_fn(void *pparams);
+#else
+DWORD WINAPI poll_libusb_thread_fn(void *pparams);
+#endif
 static int	 perseus_set_presel(perseus_descr *descr, uint8_t presel_flt_id);
 
 // API implementation ------------------------------------------------
@@ -66,7 +76,7 @@ void perseus_set_debug(int level)
 
 int	perseus_init(void)
 {
-	int rc;
+	
 	ssize_t i, num_devs, num_perseus = 0;
 	libusb_device **list;
 	libusb_device *device;
@@ -151,7 +161,22 @@ int	perseus_init(void)
 	// start the libusb polling thread
 	if (perseus_list_entries > 0 && poll_libusb_thread_flag == 0) {
 		poll_libusb_thread_stop = FALSE;
-		if ((rc=pthread_create(&poll_libusb_thread, NULL, &poll_libusb_thread_fn, NULL))!=0) {
+		#if !defined _WIN32
+		if (pthread_create(&poll_libusb_thread, NULL, &poll_libusb_thread_fn, NULL)!= 0) {
+		#else
+		HANDLE h =
+		CreateThread(
+			/* _In_opt_   LPSECURITY_ATTRIBUTES lpThreadAttributes */ NULL,
+			/* _In_       SIZE_T dwStackSize*/ 102400,
+			/* _In_       LPTHREAD_START_ROUTINE lpStartAddress */ poll_libusb_thread_fn,
+			/* _In_opt_   LPVOID lpParameter *) */ NULL,
+			/* _In_       DWORD dwCreationFlags */ 0,
+			/* _Out_opt_  LPDWORD lpThreadId */ NULL
+		);
+		poll_libusb_thread = h;
+		
+		if (h == NULL) {
+		#endif
 			return errorset(PERSEUS_CANTCREAT, "can't create poll libusb thread");
 		} else {
 			poll_libusb_thread_flag = 1;
@@ -167,7 +192,11 @@ int	perseus_exit(void)
 
 	if (poll_libusb_thread_flag != 0) {
 		poll_libusb_thread_stop = TRUE;
+		#if !defined _WIN32
 		pthread_join(poll_libusb_thread, NULL);
+		#else
+		WaitForSingleObject ( poll_libusb_thread, INFINITE);
+		#endif
 		poll_libusb_thread_flag = 0;
 	}
 	
@@ -675,12 +704,19 @@ int	perseus_stop_async_input(perseus_descr *descr)
 
 	return errornone(0);
 }
-
+#if !defined _WIN32
 static void *poll_libusb_thread_fn(void *pparams)
+#else
+DWORD WINAPI poll_libusb_thread_fn(void *pparams)
+#endif
 {
+	#if !defined _WIN32
 	int maxpri, rc;
-
+	#endif
+	
 	dbgprintf(3,"poll libusb thread started...");
+
+	#if !defined _WIN32
 
 	if ((maxpri = sched_get_priority_max(SCHED_FIFO))>=0) {
 		struct sched_param sparam;
@@ -694,7 +730,10 @@ static void *poll_libusb_thread_fn(void *pparams)
 			dbgprintf(3,"done");
 			}
 		}
-
+		
+	#else
+	
+	#endif
 	// handle libusb events until perseus_exit is called
 	while (poll_libusb_thread_stop==FALSE) {
 			static struct timeval tv;

@@ -14,9 +14,9 @@ if OS_WINDOWS
 # -mno-ms-bitfields needed in order to properly align fields in structures 
 # http://stackoverflow.com/questions/7789668/why-would-the-size-of-a-packed-structure-be-different-on-linux-and-windows-when
 #
-AM_CFLAGS  = -Wall -O3 -DSVN_REVISION=\"@SVNREV@\" -mno-ms-bitfields -I../libusb-1.0.last/ -I../pthreads -DPTW32_STATIC_LIB -D__CLEANUP_C   
-AM_LDLIBS  = -lpthreadGC2 -ldl 
-AM_LDFLAGS = -L../pthreads -lpthreadGC2 -ldl
+AM_CFLAGS  = -Wall -O3 -DSVN_REVISION=\"@SVNREV@\" -mno-ms-bitfields -I../libusb-1.0.last/ -DPTW32_STATIC_LIB -D__CLEANUP_C   
+AM_LDLIBS  = -ldl 
+AM_LDFLAGS = -ldl
 endif
 
 
@@ -29,7 +29,6 @@ nodist_perseustest_SOURCES = fpga_data.c
 
 perseustest_dyn_SOURCES = perseustest.c perseuserr.h
 perseustest_dyn_LDADD   = -lperseus-sdr
-#perseustest_dyn_LDFLAGS   = -L../pthreads -L../libusb-1.0.last/libusb/ -lpthreadGC2 -lusb-1.0 -lperseus-sdr 
 
 lib_LTLIBRARIES = libperseus-sdr.la
 

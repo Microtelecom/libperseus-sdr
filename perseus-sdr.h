@@ -29,7 +29,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#if !defined(_WIN32)
 #include <pthread.h>
+#endif
 #include <libusb-1.0/libusb.h>
 #include <time.h>
 
