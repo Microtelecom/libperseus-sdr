@@ -31,10 +31,10 @@
 #endif
 #include "perseus-sdr.h"
 
-#if defined SVN_REVISION
-const char *svn_revision = SVN_REVISION;
+#if defined GIT_REVISION
+const char *git_revision = GIT_REVISION;
 #else
-const char *svn_revision ="UNKNOWN";
+const char *git_revision ="GIT_REVISION_UNKNOWN";
 #endif
 
 /* TODO:
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 	// Set debug info dumped to stderr to the maximum verbose level
 	perseus_set_debug(dbg_lvl);
 	
-    printf ("Revision: %s\n", svn_revision);
+    printf ("Revision: %s\n", git_revision);
 	printf ("SAMPLE RATE: %d\n", sr);
 	printf ("NBUF: %d BUF SIZE: %d TOTAL BUFFER LENGTH: %d\n", nb, bs, nb*bs);
 

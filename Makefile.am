@@ -1,9 +1,16 @@
 
 ACLOCAL_AMFLAGS = -I build-aux
 
+BUILT_SOURCES = $(top_srcdir)/.version fpga_data.c
+
+$(top_srcdir)/.version:
+	echo $(VERSION) > $@-t && mv $@-t $@
+dist-hook:
+	echo $(VERSION) > $(distdir)/.tarball-version
+
 if OS_LINUX
 # flags you want to pass to the C compiler & linker
-AM_CFLAGS  =  -Wall -O3 @SIMD_FLAGS@ -DSVN_REVISION=\"@SVNREV@\"
+AM_CFLAGS  =  -Wall -O3 @SIMD_FLAGS@ -DGIT_REVISION=\"@VERSION@\"
 AM_LDFLAGS =
 AM_LIBS    = -lusb1.0 -ldl
 endif
@@ -14,7 +21,7 @@ if OS_WINDOWS
 # -mno-ms-bitfields needed in order to properly align fields in structures 
 # http://stackoverflow.com/questions/7789668/why-would-the-size-of-a-packed-structure-be-different-on-linux-and-windows-when
 #
-AM_CFLAGS  = -Wall -O3 -DSVN_REVISION=\"@SVNREV@\" -mno-ms-bitfields -I../libusb-1.0.last/ -DPTW32_STATIC_LIB -D__CLEANUP_C   
+AM_CFLAGS  = -Wall -O3 -DGIT_REVISION=\"@VERSION@\" -mno-ms-bitfields -I../libusb-1.0.last/ -DPTW32_STATIC_LIB -D__CLEANUP_C   
 AM_LDLIBS  = -ldl 
 AM_LDFLAGS = -ldl
 endif
@@ -53,7 +60,6 @@ dist_check_DATA = $(srcdir)/perseus125k24v21.rbs  $(srcdir)/perseus192k24v31.rbs
 #
 # Generate source file for FPGA code
 #
-BUILT_SOURCES = fpga_data.c
 CLEANFILES = fpga_data.c
 
 fpga_data.c: $(srcdir)/generate_fpga_code.sh $(dist_pkgdata_DATA) $(dist_check_DATA)
@@ -69,7 +75,7 @@ fpga_data.c: $(srcdir)/generate_fpga_code.sh $(dist_pkgdata_DATA) $(dist_check_D
 #
 udevrule_DATA = $(top_srcdir)/95-perseus.rules
 udevruledir = $(bindir)
-EXTRA_DIST = $(top_srcdir)/95-perseus.rules SVNREV README.Windows
+EXTRA_DIST = $(top_srcdir)/95-perseus.rules README.Windows $(top_srcdir)/build-aux/git-version-gen
 
 install-data-hook:
 	-cp $(bindir)/95-perseus.rules /etc/udev/rules.d/ ; groupadd perseususb ; echo $(INST_USER) ;usermod -a -G perseususb $(INST_USER) ; udevadm control --reload-rules
@@ -78,4 +84,4 @@ uninstall-hook:
 	-rm /etc/udev/rules.d/95-perseus.rules ; groupdel perseususb ; udevadm control --reload-rules
 
 
-distdir = $(PACKAGE)-$(VERSION).$(SVNREV)
+distdir = $(PACKAGE)-$(VERSION)

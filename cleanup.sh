@@ -15,3 +15,6 @@ rm -f -r build-aux/ltversion.m4
 rm -f -r build-aux/lt~obsolete.m4
 rm -f -r libperseus_sdr*
 rm -f -r perseusdata
+rm -f -r .version
+rm -f -r .tarball*
+

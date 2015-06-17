@@ -2,7 +2,9 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([libperseus_sdr], [0.7], [andrew@montefusco.com])
+AC_INIT([libperseus_sdr], 
+        [m4_esyscmd([./build-aux/git-version-gen .tarball-version])], 
+        [andrew@montefusco.com])
 
 AM_INIT_AUTOMAKE
 
@@ -15,13 +17,6 @@ AM_SILENT_RULES
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
-
-SVNREV=`(svnversion $srcdir | sed 's/:.*//') 2>/dev/null`
-if { ! ( svnversion ) >/dev/null 2>&1 || test "$SVNREV" = "exported" || test "$SVNREV" = "Unversioned directory" || test "$SVNREV" = "Unversioned file"; } ;
-    then SVNREV=`cat $srcdir/SVNREV`
-    else echo $SVNREV | sed 's/ /_/' >$srcdir/SVNREV
-fi
-AC_SUBST(SVNREV)
 
 case $host in
 *-linux* | *-uclinux*)
