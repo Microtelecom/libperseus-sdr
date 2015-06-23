@@ -32,7 +32,8 @@
 // The timeout for max bulk transfer size (16320 Bytes) at minimum sample rate (48 KS/s)
 // is 16320 / (48*6) = 0.0566 ms
 // We set it at 80 ms so that input transfers (should) never timeout
-#define PERSEUS_INPUT_TIMEOUT	80
+// #define PERSEUS_INPUT_TIMEOUT	80
+// AM 30/01/2015 - Computed on the fly due to very wide range of values for the buffers sizes
 
 static void LIBUSB_CALL input_queue_callback(struct libusb_transfer *transfer);
 
@@ -56,9 +57,11 @@ int  perseus_input_queue_create(
 	queue->bytes_received 	 = 0;
 	queue->callback_fn		 = callback_fn;
 	queue->callback_extra	 = callback_extra;
-	queue->timeout			 = queue_size*PERSEUS_INPUT_TIMEOUT;
+	// AM 30/01/2015 - Computed on the fly due to very wide range of values for the buffers sizes
+	queue->timeout			 = queue_size*((transfer_buf_size / (48 * 6))*2);
 
 
+        dbgprintf (5, "timeout: %d\n", queue->timeout);
 	// allocate a perseus_input_transfer array of given size
 	transfer_queue = queue->transfer_queue	= (perseus_input_transfer*)malloc(queue_size*sizeof(perseus_input_transfer));
 	if (!queue->transfer_queue) 

@@ -637,8 +637,9 @@ int	perseus_start_async_input(perseus_descr *descr,
 	if (descr->input_queue.transfer_queue!=NULL) 
 		return errorset(PERSEUS_ASYNCSTARTED, "async input already started");
 
-	if (buffersize>16320) 
-		return errorset(PERSEUS_ERRPARAM, "max libusb bulk buffer size is 16320 bytes");
+	// AM 30/01/2015 - Computed on the fly due to very wide range of values for the buffers sizes
+	//if (buffersize>16320) 
+	//	return errorset(PERSEUS_ERRPARAM, "max libusb bulk buffer size is 16320 bytes");
 
 	maxps = libusb_get_max_packet_size (descr->device, PERSEUS_EP_DATAIN);	
 
