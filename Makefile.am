@@ -22,8 +22,8 @@ if OS_WINDOWS
 # http://stackoverflow.com/questions/7789668/why-would-the-size-of-a-packed-structure-be-different-on-linux-and-windows-when
 #
 AM_CFLAGS  = -Wall -O3 -DGIT_REVISION=\"@VERSION@\" -mno-ms-bitfields -I../libusb-1.0.last/ -DPTW32_STATIC_LIB -D__CLEANUP_C   
-AM_LDLIBS  = -ldl 
-AM_LDFLAGS = -ldl
+AM_LDLIBS  =  
+AM_LDFLAGS = -no-undefined
 endif
 
 

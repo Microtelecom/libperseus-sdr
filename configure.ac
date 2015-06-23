@@ -11,12 +11,18 @@ AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([perseuserr.h])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([build-aux])
+#AM_SILENT_RULES([yes])
 AM_SILENT_RULES
 
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
+
+AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
+AC_SUBST([LIBTOOL_DEPS])
+AC_LIB_LTDL
+LT_INIT([win32-dll])
 
 case $host in
 *-linux* | *-uclinux*)
@@ -112,7 +118,7 @@ case $backend in
 	AC_DEFINE(OS_WINDOWS, 1, [Windows backend])
 	AC_SUBST(OS_WINDOWS)
 	#LIBS=""
-	LTLDFLAGS="${LTLDFLAGS} -avoid-version -Wl,--add-stdcall-alias"
+	LTLDFLAGS="${LTLDFLAGS} -avoid-version -Wl,--add-stdcall-alias  -Wl,-no-undefined"
 	
 	CFLAGS="$CFLAGS -I../libusb-1.0.last/"
     CXXFLAGS="$CXXFLAGS -I../libusb-1.0.last/"
