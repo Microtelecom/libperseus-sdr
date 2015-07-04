@@ -1,7 +1,26 @@
 #!/bin/bash
 
 dt=$(date)
-
+cat_cmd=`command -v cat`
+if [ -z "$cat_cmd" ]; then
+   >&2 echo "cat command not present, cannot continue. Check your PATH"
+   exit 255
+fi
+sort_cmd=`command -v sort`
+if [ -z "$sort_cmd" ]; then
+   >&2 echo "sort command not present, cannot continue. Check your PATH"
+   exit 255
+fi
+sed_cmd=`command -v sed`
+if [ -z "$sed_cmd" ]; then
+   >&2 echo "sed command not present, cannot continue. Check your PATH"
+   exit 255
+fi
+stat_cmd=`command -v stat`
+if [ -z "$stat_cmd" ]; then
+   >&2 echo "stat command not present, cannot continue. Check your PATH"
+   exit 255
+fi
 #
 # Emit prelude code
 #
@@ -52,7 +71,7 @@ N_FPGA=0
 for x in $RBS
 do
   # compute file length
-  file_size=$(stat -c%s "$x")
+  file_size=$($stat_cmd -c%s "$x")
 
   
   ### ->  # removes the shortest match from the beginning
@@ -72,9 +91,9 @@ do
 
   tag=""
   
-  if [ -n "$( echo $mega | sed 's/^[+-]//;s/[0-9]//g;s/\.//;s/d//' )" ] ; then
+  if [ -n "$( echo $mega | $sed_cmd 's/^[+-]//;s/[0-9]//g;s/\.//;s/d//' )" ] ; then
      
-    if [ -n "$( echo $kilo | sed 's/^[+-]//;s/[0-9]//g;s/\.//' )" ] ; then
+    if [ -n "$( echo $kilo | $sed_cmd 's/^[+-]//;s/[0-9]//g;s/\.//' )" ] ; then
 		echo "FATAL: UNEXPECTED: $kilo"
         exit 255
     else
@@ -83,7 +102,7 @@ do
 	 
   else
 	### search for a 'd' embedded
-	if [ -n "$( echo $mega | sed 's/^[+-]//;s/[0-9]//g;s/\.//' )" ] ; then
+	if [ -n "$( echo $mega | $sed_cmd 's/^[+-]//;s/[0-9]//g;s/\.//' )" ] ; then
 		dd=${mega#*d}
 		ii=${mega%d*}
 	    tag=$(expr $ii \* 1000000 + $dd \* 100000 )
@@ -99,7 +118,7 @@ do
   echo "  { "
 
   # produce the data in C format
-  cat "$x" | xxd -i
+  $cat_cmd "$x" | xxd -i
   echo "  };"
   echo "//// end of $file"
   N_FPGA=$(( $N_FPGA + 1 ))
@@ -123,7 +142,7 @@ echo -n "" > tmpfile
 
 for x in $RBS
 do
-  file_size=$(stat -c%s "$x")
+  file_size=$($stat_cmd -c%s "$x")
 
   file=${x##*/}
 
@@ -135,9 +154,9 @@ do
 
   tag=""
 
-  if [ -n "$( echo $mega | sed 's/^[+-]//;s/[0-9]//g;s/\.//;s/d//' )" ] ; then
+  if [ -n "$( echo $mega | $sed_cmd 's/^[+-]//;s/[0-9]//g;s/\.//;s/d//' )" ] ; then
      
-    if [ -n "$( echo $kilo | sed 's/^[+-]//;s/[0-9]//g;s/\.//' )" ] ; then
+    if [ -n "$( echo $kilo | $sed_cmd 's/^[+-]//;s/[0-9]//g;s/\.//' )" ] ; then
  		echo "FATAL: UNEXPECTED: $kilo"
         exit 255
      else
@@ -146,7 +165,7 @@ do
 
   else
 	### search for a 'd' embedded
-	if [ -n "$( echo $mega | sed 's/^[+-]//;s/[0-9]//g;s/\.//' )" ] ; then
+	if [ -n "$( echo $mega | $sed_cmd 's/^[+-]//;s/[0-9]//g;s/\.//' )" ] ; then
 		dd=${mega#*d}
 		ii=${mega%d*}
 	    tag=$(expr $ii \* 1000000 + $dd \* 100000 )
@@ -163,14 +182,14 @@ done
 #
 # sort
 #
-cat tmpfile | sort -g > tmpfile2
+$cat_cmd tmpfile | $sort_cmd -g > tmpfile2
 
 
 while read SPEED FN SIZE FN2
 do
    echo "////  >>>>$SPEED<>$FN<>$SIZE<<<<<<"
 
-   obj_name=$( echo $FN | sed 's/[\.]/_/' )
+   obj_name=$( echo $FN | $sed_cmd 's/[\.]/_/' )
 
    echo "{"
    echo "    \"$FN\",    "
@@ -185,7 +204,7 @@ done < tmpfile2
 
 
 
-cat << XXXX_END
+$cat_cmd << XXXX_END
 }; // end of table *******
 
 XXXX_END
@@ -195,7 +214,7 @@ echo "int nFpgaImages = $N_FPGA;"
 
 
 # emit trailers
-cat << XXXXX_END
+$cat_cmd << XXXXX_END
 
 /*
  * Compile and test with the following command:

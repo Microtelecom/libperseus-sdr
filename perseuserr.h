@@ -54,26 +54,45 @@
 #define PERSEUS_BUFFERSIZE		-24
 #define PERSEUS_ATTERROR		-25
 
-#define dbgprintf(level, format, args...) \
-	{ \
-      if (perseus_dbg_level >= level) {\
-           fprintf(stderr, "perseus: "); \
-           fprintf(stderr, format, ## args); \
-           fprintf(stderr, "\n"); \
-		} \
-	}
-#define errorset(x, format, args...) \
-    ( \
-  	  snprintf(perseus_error_str, sizeof(perseus_error_str) - 1, format, ## args), \
-	  ((perseus_dbg_level >= 1)? fprintf(stderr, "perseus error: %s\n", perseus_error_str):0),\
-	  (perseus_error = x)\
-	)
+
+#define dbgprintf(level, format, ...) \
+     { \
+    if (perseus_dbg_level >= level) {\
+         fprintf(stderr, "perseus: "); \
+         fprintf(stderr, format, ## __VA_ARGS__); \
+         fprintf(stderr, "\n"); \
+             } \
+     }
+
+#define errorset(x, format, ...) \
+  ( \
+       snprintf(perseus_error_str, sizeof(perseus_error_str) - 1, format, ## __VA_ARGS__), \
+       ((perseus_dbg_level >= 1)? fprintf(stderr, "perseus error: %s\n", perseus_error_str):0),\
+       (perseus_error = x) \
+     )
+
 
 #define errornone(x) (perseus_error=0, x)
 
-extern int  perseus_dbg_level;
-extern char perseus_error_str[1024];
-extern int  perseus_error;
+#if defined(_WIN32) || defined(_WIN64)
+  #if defined(BUILDING_LIBPERSEUS_SDR)
+    #define PERSEUS_EXTERN __declspec(dllexport)
+
+  #elif !defined(STATIC_LIBPERSEUS_SDR)
+    #define PERSEUS_EXTERN __declspec(dllimport)
+
+  #else
+    #define PERSEUS_EXTERN extern
+  #endif
+#else
+  #define PERSEUS_EXTERN extern
+#endif
+
+PERSEUS_EXTERN int  perseus_dbg_level;
+PERSEUS_EXTERN char perseus_error_str[1024];
+PERSEUS_EXTERN int  perseus_error;
+
+
 
 #ifdef __cplusplus
 extern "C" {
