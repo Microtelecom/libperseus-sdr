@@ -74,7 +74,7 @@
 
 #define errornone(x) (perseus_error=0, x)
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_MSC_VER) && (defined(_WIN32) || defined(_WIN64) )
   #if defined(BUILDING_LIBPERSEUS_SDR)
     #define PERSEUS_EXTERN __declspec(dllexport)
 
