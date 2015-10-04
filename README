@@ -11,7 +11,7 @@
 #
 sudo apt-get update
 sudo apt-get upgrade
-sudo apt-get install gcc g++ make manpages-dev autoconf automake libtool subversion
+sudo apt-get install gcc g++ make manpages-dev autoconf automake libtool git-base
 #
 # Install the prerequisite library
 #
@@ -27,7 +27,7 @@ su - root
 # next install the prerequisite packages:
 
 yum update
-yum install gcc gcc-c++ man-pages autoconf automake libtool subversion
+yum install gcc gcc-c++ man-pages autoconf automake libtool git
 yum install libusb1 libusb1-devel
 
 #
@@ -39,7 +39,7 @@ su - root
 
 # next install the prerequisite packages:
 
-urpmi gcc gcc-c++ man-pages autoconf automake subversion libtool make
+urpmi gcc gcc-c++ man-pages autoconf automake git libtool make
 urpmi -a libusb1
 
 
@@ -47,7 +47,7 @@ urpmi -a libusb1
 # download, compile and install the Perseus library
 #
 cd 
-svn checkout http://libperseus-sdr.googlecode.com/svn/trunk/ libperseus-sdr
+git clone https://github.com/amontefusco/libperseus-sdr.git
 cd libperseus-sdr
 sh bootstrap.sh
 ./configure && make
