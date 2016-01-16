@@ -1,3 +1,5 @@
+[![release](http://github-release-version.herokuapp.com/github/amontefusco/libperseus-sdr/release.svg?style=flat)](https://github.com/amontefusco/libperseus-sdr/releases/latest)
+
 #Perseus on Linux/Unix: libperseus-sdr
 
 #######For build instructions, please read the README and README.Windows files.
