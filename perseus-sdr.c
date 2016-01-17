@@ -964,7 +964,7 @@ int perseus_set_attenuator_n (perseus_descr *descr, int nlo)
 //
 // https://github.com/lorf/csr-spi-ftdi/blob/master/compat.c
 //
-#if defined _WIN32
+#if defined _WIN32 && !(defined(__MINGW32__) || defined(__MINGW64__))
 /*
 * This fixes linking with precompiled libusb-1.0.18-win and
 * libusb-1.0.19-rc1-win: "undefined reference to __ms_vsnprintf". See:

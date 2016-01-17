@@ -114,9 +114,9 @@ case $backend in
 	#LIBS=""
 	LTLDFLAGS="${LTLDFLAGS} -avoid-version -Wl,--add-stdcall-alias"
 	
-	CFLAGS="$CFLAGS -I../libusb-1.0.last/"
-    CXXFLAGS="$CXXFLAGS -I../libusb-1.0.last/"
-    LDFLAGS="$LDFLAGS -L../libusb-1.0.last/libusb/"
+	#CFLAGS="$CFLAGS -I../libusb-1.0.last/"
+    #CXXFLAGS="$CXXFLAGS -I../libusb-1.0.last/"
+    LDFLAGS="$LDFLAGS -L/usr/lib/ -L/mingw32/bin/"
 
 	AC_CHECK_HEADERS([libusb-1.0/libusb.h])
 	
