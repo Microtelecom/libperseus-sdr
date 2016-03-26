@@ -45,9 +45,9 @@ Below you find the instructions for copy, compile, install, test; copy them verb
 ```
 sudo apt-get install libusb-dev
 cd /tmp
-wget https://github.com/amontefusco/libperseus-sdr/releases/download/v0.7.1/libperseus_sdr-0.7.1.tar.gz
-tar -zxvf libperseus_sdr-0.7.1.tar.gz
-cd libperseus_sdr-0.7.1/
+wget https://github.com/amontefusco/libperseus-sdr/releases/download/v0.7.2/libperseus_sdr-0.7.2.tar.gz
+tar -zxvf libperseus_sdr-0.7.2.tar.gz
+cd libperseus_sdr-0.7.2/
 ./configure
 make
 sudo make install
@@ -62,7 +62,7 @@ If you prefer run it without installation run
 In either case, the output should be as follows (supposing the hardware for now is detached):
 
 ```
-Revision: 0.7.1
+Revision: 0.7.2
 SAMPLE RATE: 95000
 NBUF: 6 BUF SIZE: 1024 TOTAL BUFFER LENGTH: 6144
 perseus: perseus_init()
