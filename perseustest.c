@@ -66,22 +66,27 @@ void print_usage ()
 	}
 	fprintf (stderr, "-n ............ number of buffers\n");
 	fprintf (stderr, "-b ............ buffer size in bytes\n");
-	fprintf (stderr, "-d ............ debug level (0..9, -1  no debug)\n");
+	fprintf (stderr, "-d ............ debug level (0..9, -1 no debug)\n");
 	fprintf (stderr, "-a ............ don't test attenuators\n");
-	fprintf (stderr, "-t ............ acquisition test duration in seconds (default 10)\n");
+	fprintf (stderr, "-t ............ acquisition test duration in seconds (default 10, 0 infinite)\n");
+	fprintf (stderr, "-o ............ file name, '-' standard output (default perseusdata)\n");
+	fprintf (stderr, "-f ............ frequency value in Hz, default 7.050 MHz\n");
+	fprintf (stderr, "-p ............ I/Q samples emitted as floating "
+					 "point instead of 24 bits unsigned int.");
 	fprintf (stderr, "-h ............ this help\n");
 }
 
 // The function that will be called by the perseus library when a 
 // data buffer from the Perseus input data endpoint is available
-static int user_data_callback(void *buf, int buf_size, void *extra);
+static int user_data_callback_c_u(void *buf, int buf_size, void *extra);
+static int user_data_callback_c_f(void *buf, int buf_size, void *extra);
 
 int main(int argc, char **argv)
 {
 	int k, num_perseus;
 	perseus_descr *descr;
 	eeprom_prodid prodid;
-	FILE *fout;
+	FILE *fout = stdout;
     int i;
 	int sr = 95000;
 	int nb = 6;
@@ -89,16 +94,21 @@ int main(int argc, char **argv)
 	int dbg_lvl = 3;
 	int no_ta = 0;
 	int test_time = 10;
+	char out_file_name[128] = "perseusdata";
+	long freq = 7000000;
+	int fp_output = 0;
 
 	for (i=0; i < argc; ++i) {
 		dbgprintf (3,"%d: %s\n", i, argv[i]);
 		if (!strcmp(argv[i],"-s") && (i+1)<argc) {
 		    ++i;
-			if(sscanf(argv[i], "%d", &sr) == 1) ; else sr = 95000;
+			if(sscanf(argv[i], "%d", &sr) == 1) ;
+			else sr = 95000;
 		}
 		if (!strcmp(argv[i],"-n") && (i+1)<argc) {
 		    ++i;
-			if(sscanf(argv[i], "%d", &nb) == 1) ; else nb = 6;
+			if(sscanf(argv[i], "%d", &nb) == 1) ;
+			else nb = 6;
 		}
 		if (!strcmp(argv[i],"-b") && (i+1)<argc) {
 		    ++i;
@@ -113,52 +123,65 @@ int main(int argc, char **argv)
 		}
 		if (!strcmp(argv[i],"-t") && (i+1)<argc) {
 		    ++i;
-			if(sscanf(argv[i], "%d", &test_time) == 1) ; else test_time = 10;
+			if(sscanf(argv[i], "%d", &test_time) == 1) ;
+			else test_time = 10;
+		}
+		if (!strcmp(argv[i],"-o") && (i+1)<argc) {
+		    ++i;
+			if(sscanf(argv[i], "%s", out_file_name) == 1) ;
+			else strcpy(out_file_name, "perseusdata");
+		}
+		if (!strcmp(argv[i],"-f") && (i+1)<argc) {
+		    ++i;
+			if(sscanf(argv[i], "%ld", &freq) == 1) ;
+			else freq = 7000000;
 		}
 		if (!strcmp(argv[i],"-h")) {
 		    print_usage ();
 			exit (255);
 		}
-
+		if (!strcmp(argv[i],"-p")) {
+			fp_output = 1;
+		}		
 	}
 	
 	// Set debug info dumped to stderr to the maximum verbose level
 	perseus_set_debug(dbg_lvl);
 	
-    printf ("Revision: %s\n", git_revision);
-	printf ("SAMPLE RATE: %d\n", sr);
-	printf ("NBUF: %d BUF SIZE: %d TOTAL BUFFER LENGTH: %d\n", nb, bs, nb*bs);
+    fprintf (stderr, "Revision: %s\n", git_revision);
+	fprintf (stderr, "SAMPLE RATE: %d\n", sr);
+	fprintf (stderr, "NBUF: %d BUF SIZE: %d TOTAL BUFFER LENGTH: %d\n", nb, bs, nb*bs);
 
 	// Check how many Perseus receivers are connected to the system
 	num_perseus = perseus_init();
-	printf("%d Perseus receivers found\n",num_perseus);
+	fprintf(stderr, "%d Perseus receivers found\n",num_perseus);
 
 	if (num_perseus==0) {
-		printf("No Perseus receivers detected\n");
+		fprintf(stderr, "No Perseus receivers detected\n");
 		perseus_exit();
 		return 0;
 	}
 
 	// Open the first one...
 	if ((descr=perseus_open(0))==NULL) {
-		printf("error: %s\n", perseus_errorstr());
+		fprintf(stderr, "error: %s\n", perseus_errorstr());
 		return 255;
 	}
 
 	// Download the standard firmware to the unit
-	printf("Downloading firmware...\n");
+	fprintf(stderr, "Downloading firmware...\n");
 	if (perseus_firmware_download(descr,NULL)<0) {
-		printf("firmware download error: %s", perseus_errorstr());
+		fprintf(stderr, "firmware download error: %s", perseus_errorstr());
 		return 255;
 	}
 	// Dump some information about the receiver (S/N and HW rev)
 	if (descr->is_preserie == TRUE) 
-		printf("The device is a preserie unit");
+		fprintf(stderr, "The device is a preserie unit");
 	else
 		if (perseus_get_product_id(descr,&prodid)<0) 
-			printf("get product id error: %s", perseus_errorstr());
+			fprintf(stderr, "get product id error: %s", perseus_errorstr());
 		else
-			printf("Receiver S/N: %05d-%02hX%02hX-%02hX%02hX-%02hX%02hX - HW Release:%hd.%hd\n",
+			fprintf(stderr, "Receiver S/N: %05d-%02hX%02hX-%02hX%02hX-%02hX%02hX - HW Release:%hd.%hd\n",
 					(uint16_t) prodid.sn, 
 					(uint16_t) prodid.signature[5],
 					(uint16_t) prodid.signature[4],
@@ -174,22 +197,22 @@ int main(int argc, char **argv)
         int buf[BUFSIZ];
 
         if (perseus_get_sampling_rates (descr, buf, sizeof(buf)/sizeof(buf[0])) < 0) {
-			printf("get sampling rates error: %s\n", perseus_errorstr());
+			fprintf(stderr, "get sampling rates error: %s\n", perseus_errorstr());
 			goto main_cleanup;
         } else {
             int i = 0;
             while (buf[i]) {
-                printf("#%d: sample rate: %d\n", i, buf[i]);
+                fprintf(stderr, "#%d: sample rate: %d\n", i, buf[i]);
                 i++;
             }
         }
     }
 
 	// Configure the receiver for 2 MS/s operations
-	printf("Configuring FPGA...\n");
+	fprintf(stderr, "Configuring FPGA...\n");
 	if (perseus_set_sampling_rate(descr, sr) < 0) {  // specify the sampling rate value in Samples/second
 	//if (perseus_set_sampling_rate_n(descr, 0)<0)        // specify the sampling rate value as ordinal in the vector
-		printf("fpga configuration error: %s\n", perseus_errorstr());
+		fprintf(stderr, "fpga configuration error: %s\n", perseus_errorstr());
 		goto main_cleanup;
 	}
 
@@ -200,11 +223,11 @@ int main(int argc, char **argv)
         int buf[BUFSIZ];
 
         if (perseus_get_attenuator_values (descr, buf, sizeof(buf)/sizeof(buf[0])) < 0) {
-			printf("get attenuator values error: %s\n", perseus_errorstr());
+			fprintf(stderr, "get attenuator values error: %s\n", perseus_errorstr());
         } else {
             int i = 0;
             while (buf[i] != -1) {
-                printf("#%d: att val in dB: %d\n", i, buf[i]);
+                fprintf(stderr, "#%d: att val in dB: %d\n", i, buf[i]);
                 i++;
             }
         }
@@ -254,31 +277,39 @@ int main(int argc, char **argv)
 
 	// Do the same cycling test with the WB front panel led.
 	// Enable preselection filters (WB_MODE Off)
-	perseus_set_ddc_center_freq(descr, 7000000.000, 1);
+	perseus_set_ddc_center_freq(descr, freq, 1);
 	sleep(1);
 	// Disable preselection filters (WB_MODE On)
-	perseus_set_ddc_center_freq(descr, 7000000.000, 0);
+	perseus_set_ddc_center_freq(descr, freq, 0);
 	sleep(1);
 	// Re-enable preselection filters (WB_MODE Off)
-	perseus_set_ddc_center_freq(descr, 7000000.000, 1);
+	perseus_set_ddc_center_freq(descr, freq, 1);
 
 	// We open a file for binary output.
-	// IQ samples will be saved in binary format to this file 
-	fout = fopen("perseusdata","wb");
-	if (!fout) {
-		printf("Can't open output file\n");
-		perseus_close(descr);
-		perseus_exit();
+	// IQ samples will be saved in binary format to this file
+	if (strcmp(out_file_name, "-")) {
+		fout = fopen(out_file_name,"wb");
+		if (!fout) {
+			fprintf(stderr, "Can't open output file\n");
+			perseus_close(descr);
+			perseus_exit();
 		}
+	}
 	
 	// We start the acquisition passing our callback and its params 
 	// (in this case the fout file handle we just open)	
-	printf("Starting async data acquisition... \n");
-	if (perseus_start_async_input(descr,nb*bs,user_data_callback,fout)<0) {
-		printf("start async input error: %s\n", perseus_errorstr());
-		goto main_cleanup;
+	fprintf(stderr, "Starting async data acquisition... \n");
+	if (fp_output) {
+		if (perseus_start_async_input(descr,nb*bs,user_data_callback_c_f,fout)<0) {
+			fprintf(stderr, "start async input error: %s\n", perseus_errorstr());
+			goto main_cleanup;
 		}
-
+	} else {
+		if (perseus_start_async_input(descr,nb*bs,user_data_callback_c_u,fout)<0) {
+			fprintf(stderr, "start async input error: %s\n", perseus_errorstr());
+			goto main_cleanup;
+		}
+	}
 	fprintf(stderr, "Collecting input samples... ");
 
 	// We wait a 10 s time interval.
@@ -292,7 +323,7 @@ int main(int argc, char **argv)
 	fprintf(stderr, "\ndone\n");
 	
 	// We stop the acquisition...
-	printf("Stopping async data acquisition...\n");
+	fprintf(stderr, "Stopping async data acquisition...\n");
 	perseus_stop_async_input(descr);
 
 	// We can safely close the output file handle here. Acquisition has stopped.
@@ -302,11 +333,11 @@ main_cleanup:
 
 	// And we can finally quit the test application
 
-	printf("Quitting...\n");
+	fprintf(stderr, "Quitting...\n");
 	perseus_close(descr);
 	perseus_exit();
 
-	printf("Bye\n");
+	fprintf(stderr, "Bye\n");
 
 	return 1;
 }
@@ -328,7 +359,11 @@ typedef union {
 		} __attribute__((__packed__)) ;
 } iq_sample;
 
-int user_data_callback(void *buf, int buf_size, void *extra)
+//
+// callback that writes in the output stream I-Q values as 32 bits
+// integers
+//
+int user_data_callback_c_u(void *buf, int buf_size, void *extra)
 {
 	// The buffer received contains 24-bit IQ samples (6 bytes per sample)
 	// Here as a demonstration we save the received IQ samples as 32 bit 
@@ -354,6 +389,45 @@ int user_data_callback(void *buf, int buf_size, void *extra)
 		s.q4 = *samplebuf++;
 
 		fwrite(&s.iq, 1, sizeof(iq_sample), fout);
-		}
+	}
+    return 0;
+}
+
+//
+// callback that writes in the output stream I-Q values as 32 bits
+// floating point 
+//
+int user_data_callback_c_f(void *buf, int buf_size, void *extra)
+{
+	// The buffer received contains 24-bit IQ samples (6 bytes per sample)
+	// Here as a demonstration we save the received IQ samples as 32 bit 
+	// (msb aligned) integer IQ samples.
+
+	// At the maximum sample rate (2 MS/s) the hard disk should be capable
+	// of writing data at a rate of at least 16 MB/s (almost 1 GB/min!)
+
+	uint8_t	*samplebuf 	= (uint8_t*)buf;
+	FILE *fout 			= (FILE*)extra;
+	int nSamples 		= buf_size/6;
+	int k;
+	iq_sample s;
+	
+	s.i1 = s.q1 = 0;
+
+	for (k=0;k<nSamples;k++) {
+		s.i2 = *samplebuf++;
+		s.i3 = *samplebuf++;
+		s.i4 = *samplebuf++;
+		s.q2 = *samplebuf++;
+		s.q3 = *samplebuf++;
+		s.q4 = *samplebuf++;
+
+		float iq_f [2];
+		
+		iq_f[0] = (float)(s.iq.i);
+		iq_f[1] = (float)(s.iq.q);
+		
+		fwrite(iq_f, 2, sizeof(float), fout);
+	}
     return 0;
 }
