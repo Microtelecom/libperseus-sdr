@@ -306,7 +306,7 @@ int perseus_fx2_fpga_config_sr (libusb_device_handle *handle, int sample_rate)
             int left = fpgaImgTbl [n].size;
             int ntowrite;
 
-            dbgprintf(3,"perseus_fx2_fpga_config_speed(0x%08X,): %d %s %d",(int32_t)handle, 
+            dbgprintf(3,"perseus_fx2_fpga_config_speed(%p,): %d %s %d",(void *)handle, 
                       fpgaImgTbl [n].speed, fpgaImgTbl [n].name, fpgaImgTbl [n].size);
 
 			// Issue a FPGA reset command
