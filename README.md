@@ -43,7 +43,7 @@ I am not working for Microtelecom and I never did so.
 Below you find the instructions for copy, compile, install, test; copy them verbatim in a shell (tested on U14.04).
 
 ```
-sudo apt-get install libusb-dev
+sudo apt-get install libusb-1.0-0-dev
 cd /tmp
 wget https://github.com/amontefusco/libperseus-sdr/releases/download/v0.7.2/libperseus_sdr-0.7.2.tar.gz
 tar -zxvf libperseus_sdr-0.7.2.tar.gz
@@ -51,10 +51,12 @@ cd libperseus_sdr-0.7.2/
 ./configure
 make
 sudo make install
+sudo ldconfig
 perseustest
 ```
 
-If you prefer run it without installation run
+If you prefer to run it without a full installation
+
 ```
 ./perseustest
 ```
@@ -80,7 +82,7 @@ perseus: perseus_exit(): poll_libusb_thread_flag=0
 ```
 
 Once you achieve the above output, connect the hardware and restart the program: now it should acquire samples form the radio (don't expect to hear any audio though, it is just storing samples in a file named ```perseusdata```).
-If it is the first time you are using liberseus-sdr on your system, a logout (not reboot) may be needed.
+If it is the first time you are using liberseus-sdr on your system, a logout (not reboot) may be needed in order to get the USB configurations active.
  
 
 
