@@ -1,4 +1,4 @@
-[![release](http://github-release-version.herokuapp.com/github/amontefusco/libperseus-sdr/release.svg?style=flat)](https://github.com/amontefusco/libperseus-sdr/releases/latest)
+[![release](http://github-release-version.herokuapp.com/github/Microtelecom/libperseus-sdr/release.svg?style=flat)](https://github.com/Microtelecom/libperseus-sdr/releases/latest)
 
 #Perseus on Linux/Unix: libperseus-sdr
 
@@ -45,9 +45,9 @@ Below you find the instructions for copy, compile, install, test; copy them verb
 ```
 sudo apt-get install libusb-1.0-0-dev
 cd /tmp
-wget https://github.com/amontefusco/libperseus-sdr/releases/download/v0.7.3/libperseus_sdr-0.7.3.tar.gz
-tar -zxvf libperseus_sdr-0.7.3.tar.gz
-cd libperseus_sdr-0.7.3/
+wget https://github.com/Microtelecom/libperseus-sdr/releases/download/v0.7.5/libperseus_sdr-0.7.5.tar.gz
+tar -zxvf libperseus_sdr-0.7.5.tar.gz
+cd libperseus_sdr-0.7.5/
 ./configure
 make
 sudo make install
@@ -64,7 +64,7 @@ If you prefer to run it without a full installation
 In either case, the output should be as follows (supposing the hardware for now is detached):
 
 ```
-Revision: 0.7.2
+Revision: 0.7.5
 SAMPLE RATE: 95000
 NBUF: 6 BUF SIZE: 1024 TOTAL BUFFER LENGTH: 6144
 perseus: perseus_init()
