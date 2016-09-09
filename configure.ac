@@ -174,8 +174,12 @@ case $build_cpu in
 
     armv6l)
       AC_MSG_NOTICE([Platform: ARM 6])
-      CFLAGS="-O3 -pipe -march=armv6 -mfpu=vfp -mfloat-abi=hard"
-      CXXFLAGS="-O3 -pipe -march=armv6 -mfpu=vfp -mfloat-abi=hard"
+      ARM_FLAGS=""
+      AX_CHECK_COMPILE_FLAG(-march=armv6, ARM_FLAGS="$ARM_FLAGS -march=armv6", [])
+      AX_CHECK_COMPILE_FLAG(-mfpu=vfp, ARM_FLAGS="$ARM_FLAGS -mfpu=vfp", [])
+      AX_CHECK_COMPILE_FLAG(-mfloat-abi=hard, ARM_FLAGS="$ARM_FLAGS -mfloat-abi=hard", [])
+      CFLAGS="-O3 -pipe $ARM_FLAGS"
+      CXXFLAGS="-O3 -pipe $ARM_FLAGS"
       export CFLAGS
       export CXXFLAGS
       AC_MSG_NOTICE([${CFLAGS}])
@@ -184,8 +188,13 @@ case $build_cpu in
 
     armv7l)
       AC_MSG_NOTICE([Platform: ARM 7])
-      CFLAGS="-O3 -pipe -march=armv7 -mfpu=neon -fno-tree-vectorize -fopenmp"
-      CXXFLAGS="-O3 -pipe -march=armv7 -mfpu=neon -fno-tree-vectorize -fopenmp"
+      ARM_FLAGS=""
+      AX_CHECK_COMPILE_FLAG(-march=armv7, ARM_FLAGS="$ARM_FLAGS -march=armv7", [])
+      AX_CHECK_COMPILE_FLAG(-mfpu=neon, ARM_FLAGS="$ARM_FLAGS -mfpu=neon", [])
+      AX_CHECK_COMPILE_FLAG(-fno-tree-vectorize, ARM_FLAGS="$ARM_FLAGS -fno-tree-vectorize", [])
+      AX_CHECK_COMPILE_FLAG(-fopenmp, ARM_FLAGS="$ARM_FLAGS -fopenmp", [])
+      CFLAGS="-O3 -pipe $ARM_FLAGS"
+      CXXFLAGS="-O3 -pipe $ARM_FLAGS"
       export CFLAGS
       export CXXFLAGS
       AC_MSG_NOTICE([${CFLAGS}])
