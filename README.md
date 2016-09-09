@@ -45,9 +45,9 @@ Below you find the instructions for copy, compile, install, test; copy them verb
 ```
 sudo apt-get install libusb-1.0-0-dev
 cd /tmp
-wget https://github.com/amontefusco/libperseus-sdr/releases/download/v0.7.2/libperseus_sdr-0.7.2.tar.gz
-tar -zxvf libperseus_sdr-0.7.2.tar.gz
-cd libperseus_sdr-0.7.2/
+wget https://github.com/amontefusco/libperseus-sdr/releases/download/v0.7.3/libperseus_sdr-0.7.3.tar.gz
+tar -zxvf libperseus_sdr-0.7.3.tar.gz
+cd libperseus_sdr-0.7.3/
 ./configure
 make
 sudo make install
