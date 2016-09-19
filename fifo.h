@@ -32,12 +32,15 @@ extern "C" {
 
 typedef struct fifo_th {
 	perseus_descr *descr;
-	int fd;
+	FILE *fd;
 	pthread_t th;
+	char fifo_name[256];
 } FIFO_TH;
 
-int		make_fifo(const char *fifo_name);
-int		run_fifo(FIFO_TH *ftd);
+int		make_fifo (const char *fifo_name, perseus_descr *pd);
+int		run_fifo ();
+void	stop_fifo ();
+
 
 #ifdef __cplusplus
 }

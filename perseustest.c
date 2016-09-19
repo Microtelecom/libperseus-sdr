@@ -75,6 +75,7 @@ void print_usage ()
 	fprintf (stderr, "-p ............ I/Q samples emitted as floating "
 					 "point instead of 24 bits unsigned int.\n");
 	fprintf (stderr, "-F ............ FIFO command channel name\n");
+	fprintf (stderr, "-u ............ attenuator value [-10 -20 -30 db]\n");
 	fprintf (stderr, "-h ............ this help\n");
 }
 
@@ -99,7 +100,7 @@ int main(int argc, char **argv)
 	char out_file_name[128] = "perseusdata";
 	long freq = 7000000;
 	char fifo_name[128] = "";
-	FIFO_TH fifo_data = {0};
+	int atten_db = - 30;
 	int fp_output = 0;
 
 	for (i=0; i < argc; ++i) {
@@ -142,10 +143,13 @@ int main(int argc, char **argv)
 		}
 		if (!strcmp(argv[i],"-F") && (i+1)<argc) {
 		    ++i;
-			if(sscanf(argv[i], "%s", fifo_name) == 1)
-				make_fifo(fifo_name);
+			sscanf(argv[i], "%s", fifo_name);
 		}
-
+		if (!strcmp(argv[i],"-u") && (i+1)<argc) {
+		    ++i;
+			if(sscanf(argv[i], "%d", &atten_db) == 1) ; else atten_db = -30;
+			fprintf (stderr, "**************** Attenuator: %d\n", atten_db);
+		}
 		if (!strcmp(argv[i],"-h")) {
 		    print_usage ();
 			exit (255);
@@ -227,7 +231,6 @@ int main(int argc, char **argv)
 	}
 
 
-
     // Printing all attenuator values available .....
     {
         int buf[BUFSIZ];
@@ -267,6 +270,18 @@ int main(int argc, char **argv)
 //   perseus_set_attenuator_in_db(descr, 0);
 //   sleep(1);
 
+
+	//
+	// set attenuator
+	//
+	switch (atten_db) {
+		case 0:
+		case -10:
+		case -20:
+		case -30:
+			perseus_set_attenuator_n(descr, (int)(atten_db / -10));
+			break;
+	}
 
     perseus_set_attenuator_in_db(descr, 33); // Bad value !!!
 
@@ -325,8 +340,9 @@ int main(int argc, char **argv)
 	// 20160919 AM FIFO command stream management 
 	//
 	if (strlen(fifo_name)) {
-		make_fifo(fifo_name);
-		run_fifo (&fifo_data);
+		make_fifo(fifo_name, descr);
+		run_fifo ();
+		fprintf (stderr, "Control FIFO created. [%s]\n", fifo_name);
 	}
 	
 	fprintf(stderr, "Collecting input samples... ");
@@ -350,8 +366,9 @@ int main(int argc, char **argv)
 
 main_cleanup:
 
-	if (strlen(fifo_name)) pthread_join (fifo_data.th, 0);
-
+	if (strlen(fifo_name)) {
+		stop_fifo();
+	}
 
 	// And we can finally quit the test application
 
