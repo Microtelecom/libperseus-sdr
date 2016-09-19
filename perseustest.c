@@ -30,6 +30,7 @@
 #include <unistd.h>
 #endif
 #include "perseus-sdr.h"
+#include "fifo.h"
 
 #if defined GIT_REVISION
 const char *git_revision = GIT_REVISION;
@@ -72,7 +73,8 @@ void print_usage ()
 	fprintf (stderr, "-o ............ file name, '-' standard output (default perseusdata)\n");
 	fprintf (stderr, "-f ............ frequency value in Hz, default 7.050 MHz\n");
 	fprintf (stderr, "-p ............ I/Q samples emitted as floating "
-					 "point instead of 24 bits unsigned int.");
+					 "point instead of 24 bits unsigned int.\n");
+	fprintf (stderr, "-F ............ FIFO command channel name\n");
 	fprintf (stderr, "-h ............ this help\n");
 }
 
@@ -96,6 +98,8 @@ int main(int argc, char **argv)
 	int test_time = 10;
 	char out_file_name[128] = "perseusdata";
 	long freq = 7000000;
+	char fifo_name[128] = "";
+	FIFO_TH fifo_data = {0};
 	int fp_output = 0;
 
 	for (i=0; i < argc; ++i) {
@@ -136,6 +140,12 @@ int main(int argc, char **argv)
 			if(sscanf(argv[i], "%ld", &freq) == 1) ;
 			else freq = 7000000;
 		}
+		if (!strcmp(argv[i],"-F") && (i+1)<argc) {
+		    ++i;
+			if(sscanf(argv[i], "%s", fifo_name) == 1)
+				make_fifo(fifo_name);
+		}
+
 		if (!strcmp(argv[i],"-h")) {
 		    print_usage ();
 			exit (255);
@@ -310,6 +320,15 @@ int main(int argc, char **argv)
 			goto main_cleanup;
 		}
 	}
+	
+	//
+	// 20160919 AM FIFO command stream management 
+	//
+	if (strlen(fifo_name)) {
+		make_fifo(fifo_name);
+		run_fifo (&fifo_data);
+	}
+	
 	fprintf(stderr, "Collecting input samples... ");
 
 	// We wait a 10 s time interval.
@@ -330,6 +349,9 @@ int main(int argc, char **argv)
 	fclose(fout);
 
 main_cleanup:
+
+	if (strlen(fifo_name)) pthread_join (fifo_data.th, 0);
+
 
 	// And we can finally quit the test application
 

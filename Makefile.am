@@ -30,11 +30,12 @@ endif
 bin_PROGRAMS = perseustest perseustest_dyn
 
 perseustest_SOURCES = perseustest.c perseus-sdr.c perseuserr.c perseusfx2.c perseus-in.c \
-                      perseuserr.h perseusfx2.h perseus-in.h perseus-sdr.h  fpga_data.h
+                      perseuserr.h perseusfx2.h perseus-in.h perseus-sdr.h  fpga_data.h \
+                      fifo.c fifo.h
 
 nodist_perseustest_SOURCES = fpga_data.c
 
-perseustest_dyn_SOURCES = perseustest.c perseuserr.h
+perseustest_dyn_SOURCES = perseustest.c perseuserr.h fifo.c fifo.h
 perseustest_dyn_LDADD   = -lperseus-sdr
 
 lib_LTLIBRARIES = libperseus-sdr.la
