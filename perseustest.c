@@ -434,7 +434,7 @@ int user_data_callback_c_u(void *buf, int buf_size, void *extra)
 
 //
 // callback that writes in the output stream I-Q values as 32 bits
-// floating point 
+// floating point in -1.0 ... +1.0 range
 //
 int user_data_callback_c_f(void *buf, int buf_size, void *extra)
 {
@@ -450,10 +450,13 @@ int user_data_callback_c_f(void *buf, int buf_size, void *extra)
 	int nSamples 		= buf_size/6;
 	int k;
 	iq_sample s;
-	
-	s.i1 = s.q1 = 0;
 
+	// the 24 bit data is scaled to a 32bit value (so that the machine's
+	// natural signed arithmetic will work), and then use a simple
+	// ratio of the result with the maximum possible value
+	// which is INT_MAX less 256 because of the vacant lower 8 bits
 	for (k=0;k<nSamples;k++) {
+		s.i1 = s.q1 = 0;
 		s.i2 = *samplebuf++;
 		s.i3 = *samplebuf++;
 		s.i4 = *samplebuf++;
@@ -462,9 +465,9 @@ int user_data_callback_c_f(void *buf, int buf_size, void *extra)
 		s.q4 = *samplebuf++;
 
 		float iq_f [2];
-		
-		iq_f[0] = (float)(s.iq.i);
-		iq_f[1] = (float)(s.iq.q);
+		// convert to float in [-1.0 - +1.0] range
+		iq_f[0] = (float)(s.iq.i) / (INT_MAX - 256);
+		iq_f[1] = (float)(s.iq.q) / (INT_MAX - 256);
 		
 		fwrite(iq_f, 2, sizeof(float), fout);
 	}
