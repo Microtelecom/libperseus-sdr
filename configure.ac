@@ -243,7 +243,9 @@ AC_C_VOLATILE
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([gettimeofday])
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile
+				 examples/Makefile
+])
 
 AC_OUTPUT
 

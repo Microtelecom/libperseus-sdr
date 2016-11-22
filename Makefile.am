@@ -1,6 +1,9 @@
 
 ACLOCAL_AMFLAGS = -I build-aux
 
+SUBDIRS = . examples
+
+
 BUILT_SOURCES = $(top_srcdir)/.version fpga_data.c
 
 $(top_srcdir)/.version:
@@ -12,7 +15,7 @@ if OS_LINUX
 # flags you want to pass to the C compiler & linker
 AM_CFLAGS  =  -Wall -O3 @SIMD_FLAGS@ -DGIT_REVISION=\"@VERSION@\"
 AM_LDFLAGS =
-AM_LIBS    = -lusb1.0 -ldl
+AM_LIBS    = -ldl
 endif
 
 if OS_WINDOWS
@@ -27,17 +30,6 @@ AM_LDFLAGS = -ldl
 endif
 
 
-bin_PROGRAMS = perseustest perseustest_dyn
-
-perseustest_SOURCES = perseustest.c perseus-sdr.c perseuserr.c perseusfx2.c perseus-in.c \
-                      perseuserr.h perseusfx2.h perseus-in.h perseus-sdr.h  fpga_data.h \
-                      fifo.c fifo.h
-
-nodist_perseustest_SOURCES = fpga_data.c
-
-perseustest_dyn_SOURCES = perseustest.c perseuserr.h fifo.c fifo.h
-perseustest_dyn_LDADD   = -lperseus-sdr
-
 lib_LTLIBRARIES = libperseus-sdr.la
 
 libperseus_sdr_la_CFLAGS = $(AM_CFLAGS)
@@ -49,6 +41,12 @@ nodist_libperseus_sdr_la_SOURCES = fpga_data.c
 hdrdir = $(includedir)
 
 hdr_HEADERS = perseus-sdr.h perseusfx2.h perseus-in.h perseuserr.h
+
+# connvenience library
+noinst_LIBRARIES = libperseus-sdr.a
+libperseus_sdr_a_SOURCES = $(libperseus_sdr_la_SOURCES)
+nodist_libperseus_sdr_a_SOURCES = fpga_data.c
+libperseus_sdr_a_CFLAGS = $(AM_CFLAGS)
 
 #
 # auxiliary data for udev daemon configuration
