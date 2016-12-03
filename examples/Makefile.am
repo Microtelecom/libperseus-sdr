@@ -25,7 +25,8 @@ AM_LDFLAGS = -ldl
 endif
 
 
-bin_PROGRAMS = perseustest_dyn perseustest simple
+bin_PROGRAMS = perseustest_dyn perseustest
+check_PROGRAMS = simple
 
 perseustest_SOURCES = perseustest.c fifo.c fifo.h $(top_srcdir)/perseus-sdr.h
 perseustest_LDADD   = ../libperseus-sdr.a
