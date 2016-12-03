@@ -34,13 +34,13 @@ lib_LTLIBRARIES = libperseus-sdr.la
 
 libperseus_sdr_la_CFLAGS = $(AM_CFLAGS)
 libperseus_sdr_la_SOURCES =  perseus-sdr.c perseuserr.c perseusfx2.c perseus-in.c \
-                             perseuserr.h perseusfx2.h perseus-in.h perseus-sdr.h fpga_data.h
+                             perseusfx2.h perseus-in.h perseus-sdr.h fpga_data.h
 
 nodist_libperseus_sdr_la_SOURCES = fpga_data.c
 
 hdrdir = $(includedir)
 
-hdr_HEADERS = perseus-sdr.h perseusfx2.h perseus-in.h perseuserr.h
+hdr_HEADERS = perseus-sdr.h perseusfx2.h perseus-in.h 
 
 # connvenience library
 noinst_LIBRARIES = libperseus-sdr.a

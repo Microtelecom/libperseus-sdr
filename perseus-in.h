@@ -31,12 +31,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "perseuserr.h"
+#include "perseusfx2.h"
+#include "perseus-sdr.h"
 
 #include <libusb-1.0/libusb.h>
 #include <time.h>
-
-typedef int (*perseus_input_callback)(void *buf, int buf_size, void *extra);
 
 typedef struct perseus_input_queue_ds *perseus_input_queue_ptr;
 
@@ -62,6 +61,32 @@ typedef struct perseus_input_queue_ds {
 	struct timeval			stop;
 	unsigned long int		bytes_received;
 } perseus_input_queue;
+
+/*! \struct perseus_descr
+ *  \brief Microtelecom product id data structure
+ *    - sn Receiver Serial Number
+ *    - prodcode Microtelecom Product Code
+ *    - hwrel Product release
+ */
+typedef struct perseus_descr_ds {
+		int						index;
+		libusb_device		 	*device;
+	    libusb_device_handle 	*handle;
+		uint8_t					bus;
+		uint8_t					devaddr;
+		int						is_cypress_ezusb;
+		int						is_preserie;
+		int						firmware_downloaded;
+		int						fpga_configured;
+		eeprom_prodid 			product_id;
+		uint8_t					frontendctl;
+		double					adc_clk_freq;
+		double					ddc_lo_freq;
+		uint8_t					presel_flt_id;
+		fpga_sioctl				sioctl;
+		perseus_input_queue		input_queue;
+} perseus_descr;
+
 
 #ifdef __cplusplus
 extern "C" {

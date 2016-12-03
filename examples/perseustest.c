@@ -24,6 +24,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
 #if defined _WIN32
 #define	sleep(x) Sleep((x)*1000)
 #else
@@ -189,7 +191,9 @@ int main(int argc, char **argv)
 		return 255;
 	}
 	// Dump some information about the receiver (S/N and HW rev)
-	if (descr->is_preserie == TRUE) 
+	int flag;
+	perseus_is_preserie(descr, &flag);
+	if (!flag) 
 		fprintf(stderr, "The device is a preserie unit");
 	else
 		if (perseus_get_product_id(descr,&prodid)<0) 
@@ -298,7 +302,7 @@ int main(int argc, char **argv)
 		sleep(1);
 	}
 	// Enable ADC Dither, Disable ADC Preamp
-	perseus_set_adc(descr, TRUE, FALSE);
+	perseus_set_adc(descr, true, false);
 
 	// Do the same cycling test with the WB front panel led.
 	// Enable preselection filters (WB_MODE Off)

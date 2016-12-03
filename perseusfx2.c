@@ -31,8 +31,8 @@
 #include "config.h"
 #endif
 #include "perseusfx2.h"
-#include "perseuserr.h"
 #include "fpga_data.h"
+#include "perseus-sdr.h"
 
 #define FX2_TIMEOUT 	1000
 

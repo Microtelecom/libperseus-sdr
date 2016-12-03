@@ -25,9 +25,9 @@
 // ------------------------------------------------------------------------------
 
 #include <sys/time.h>     // for gettimeofday
+#include "perseus-sdr.h"
 #include "perseus-in.h"
 #include "perseusfx2.h"
-#include "perseuserr.h"
 
 // The timeout for max bulk transfer size (16320 Bytes) at minimum sample rate (48 KS/s)
 // is 16320 / (48*6) = 0.0566 ms
