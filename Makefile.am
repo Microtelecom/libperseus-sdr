@@ -40,7 +40,8 @@ nodist_libperseus_sdr_la_SOURCES = fpga_data.c
 
 hdrdir = $(includedir)
 
-hdr_HEADERS = perseus-sdr.h perseusfx2.h perseus-in.h 
+#hdr_HEADERS = perseus-sdr.h perseusfx2.h perseus-in.h 
+hdr_HEADERS = perseus-sdr.h
 
 # connvenience library
 noinst_LIBRARIES = libperseus-sdr.a

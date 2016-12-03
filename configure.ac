@@ -8,7 +8,7 @@ AC_INIT([libperseus_sdr],
 
 AM_INIT_AUTOMAKE
 
-AC_CONFIG_SRCDIR([perseuserr.h])
+AC_CONFIG_SRCDIR([perseus-sdr.h])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([build-aux])
 AM_SILENT_RULES
