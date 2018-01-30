@@ -295,10 +295,6 @@ int		perseus_get_sampling_rates(perseus_descr *descr, int *buf, unsigned int siz
 
 int		perseus_is_preserie(perseus_descr *descr, int *flag);
 
-#ifdef __cplusplus
-}
-#endif
-
 
 // Error codes and macros
 
@@ -350,10 +346,10 @@ extern int  perseus_dbg_level;
 extern char perseus_error_str[1024];
 extern int  perseus_error;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 char *perseus_errorstr(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	// _perseus_sdr_h
