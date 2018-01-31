@@ -193,7 +193,7 @@ int main(int argc, char **argv)
 	// Dump some information about the receiver (S/N and HW rev)
 	int flag;
 	perseus_is_preserie(descr, &flag);
-	if (!flag) 
+	if (flag) 
 		fprintf(stderr, "The device is a preserie unit");
 	else
 		if (perseus_get_product_id(descr,&prodid)<0) 
