@@ -968,8 +968,11 @@ int		perseus_is_preserie(perseus_descr *descr, int *flag)
 	if (descr->handle==NULL) 
 		return errorset(PERSEUS_DEVNOTOPEN, "device not open");
 		
-	*flag = descr->is_preserie;
-	return errornone(0);
+	if (flag) *flag = descr->is_preserie;
+	if (descr->is_preserie)
+		return errorset(PERSEUS_SNNOTAVAILABLE, "preserie unit");
+	else
+		return errornone(0);
 }
 
 

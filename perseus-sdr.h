@@ -293,6 +293,22 @@ int		perseus_set_sampling_rate_n(perseus_descr *descr, unsigned int sample_rate_
  */
 int		perseus_get_sampling_rates(perseus_descr *descr, int *buf, unsigned int size);
 
+/*!
+ * Returns additional info about serial number of hardware device
+ *
+ * there are around a small number of Perseus  known as "preserie",
+ * that are units without an official serial number released to trusted
+ * beta testers before the production started.
+ *
+ * \param descr pointer to descriptor
+ * \param flag pointer to an integer, to be allocated in client
+ *        data segment, where a value not equal to zero is written
+ *        if the unit is "preserie"
+ *        if flag is anull pointer, this parameter is ignored
+ * \return 0 if successfull and the unit is not "preserie"
+ * \return PERSEUS_SNNOTAVAILABLE if successfull and unit is "preserie"
+ * \return < 0 in case of error
+ */
 int		perseus_is_preserie(perseus_descr *descr, int *flag);
 
 
@@ -324,6 +340,7 @@ int		perseus_is_preserie(perseus_descr *descr, int *flag);
 #define PERSEUS_MUTEXIN			-23
 #define PERSEUS_BUFFERSIZE		-24
 #define PERSEUS_ATTERROR		-25
+#define PERSEUS_SNNOTAVAILABLE	-26
 
 #define dbgprintf(level, format, args...) \
 	{ \

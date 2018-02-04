@@ -191,9 +191,7 @@ int main(int argc, char **argv)
 		return 255;
 	}
 	// Dump some information about the receiver (S/N and HW rev)
-	int flag;
-	perseus_is_preserie(descr, &flag);
-	if (flag) 
+	if (perseus_is_preserie(descr, 0) ==  PERSEUS_SNNOTAVAILABLE)
 		fprintf(stderr, "The device is a preserie unit");
 	else
 		if (perseus_get_product_id(descr,&prodid)<0) 
