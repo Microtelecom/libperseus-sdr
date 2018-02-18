@@ -85,6 +85,8 @@ int	perseus_init(void)
 
 	dbgprintf(3,"perseus_init()");
 
+    memset(perseus_list, 0, sizeof(perseus_descr)*PERSEUS_MAX_DESCR);
+
     // try to detect the directory from which the library has been loaded
 #if !defined _WIN32
 	{
@@ -209,6 +211,7 @@ int	perseus_exit(void)
 	{
 	    descr = &perseus_list[i];
 	    if ((descr != NULL) && (descr->device != NULL)) {
+	        perseus_close(descr);
 	        libusb_unref_device(descr->device); // moved from close()
 	    }
 	}
