@@ -1,26 +1,26 @@
 // ------------------------------------------------------------------------------
 // Define the Perseus SDR Library interface
-// 
-// Copyright (c) 2010 Nicolangelo Palermo / IV3NWV 
+//
+// Copyright (c) 2010 Nicolangelo Palermo / IV3NWV
 // This file is part of the Perseus SDR Library
 //
-// The Perseus SDR Library is free software; you can redistribute 
-// it and/or modify it under the terms of the GNU Lesser General Public 
-// License as published by the Free Software Foundation; either version 
+// The Perseus SDR Library is free software; you can redistribute
+// it and/or modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either version
 // 2.1 of the License, or (at your option) any later version.
 
 // The Perseus SDR Library is distributed in the hope that it will
-// be useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
-// of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+// be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+// of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU Lesser General Public License for more details.
 
 // You should have received a copy of the GNU Lesser General Public
-// License along with the Perseus SDR Library; 
+// License along with the Perseus SDR Library;
 // if not, see <http://www.gnu.org/licenses/>.
 
 // Creation date:	10 Jan 2010
 // Version:			0.1
-// Author: 			Nicolangelo Palermo / IV3NWV 
+// Author: 			Nicolangelo Palermo / IV3NWV
 //                  (nicopal at microtelecom dot it)
 // ------------------------------------------------------------------------------
 
@@ -47,7 +47,7 @@
 #define PERSEUS_DDC_FREQ_MIN 0
 #define PERSEUS_DDC_FREQ_MAX (PERSEUS_ADC_CLK_FREQ/2)
 
-// Attenuator definitions 
+// Attenuator definitions
 #define PERSEUS_ATT_0DB		0
 #define PERSEUS_ATT_10DB	1
 #define PERSEUS_ATT_20DB	2
@@ -98,7 +98,7 @@ int		perseus_fpga_config(perseus_descr *descr, const char *fname);
 int		perseus_set_attenuator(perseus_descr *descr, uint8_t atten_id);
 int		perseus_set_adc(perseus_descr *descr, int enableDither, int enablePreamp);
 int		perseus_set_ddc_center_freq(perseus_descr *descr, double center_freq_hz, int enablePresel);
-int		perseus_start_async_input(perseus_descr *descr, uint32_t buffersize, 
+int		perseus_start_async_input(perseus_descr *descr, uint32_t buffersize,
 								perseus_input_callback callback, void *cb_extra);
 int		perseus_stop_async_input(perseus_descr *descr);
 int		perseus_set_sampling_rate(perseus_descr *descr, int new_sample_rate);
