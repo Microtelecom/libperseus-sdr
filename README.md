@@ -1,35 +1,35 @@
 [![release](http://github-release-version.herokuapp.com/github/Microtelecom/libperseus-sdr/release.svg?style=flat)](https://github.com/Microtelecom/libperseus-sdr/releases/latest)
 
-#Perseus on Linux/Unix: libperseus-sdr
+# Perseus on Linux/Unix: libperseus-sdr
 
-#######Build instructions are below, for more detailed instructions, please read the README and README.Windows files.
+## Build instructions are below, for more detailed instructions, please read the README and README.Windows files.
 
-1. This library was originally written by Nico Palermo, Microtelecom's founder and owner, 
+1. This library was originally written by Nico Palermo, Microtelecom's founder and owner,
 
-2. Albeit the libperseus-sdr library was originally targeted to Linux, it is now suitable for both Linux/Unix systems and Windows. 
+2. Albeit the libperseus-sdr library was originally targeted to Linux, it is now suitable for both Linux/Unix systems and Windows.
 Please note though, that Microtelecom produce and supports a Windows only SDRDK, that one can use
 accepting the License Agreement (see Microtelecom site, http://microtelecom.it/sdrdk/sdrdk.php).
-In any case, the library described here (libperseus-sdr) is not suitable in order to run original Perseus SDR application from Microtelecom under Linux (neither using WINE). 
+In any case, the library described here (libperseus-sdr) is not suitable in order to run original Perseus SDR application from Microtelecom under Linux (neither using WINE).
 By the way, I don't know whether just *trying* to do that, one breaks the Microtelecom's licence, so be careful.
 
 3. For which use is libperseus-sdr (very) good ?
 It allows to get control the Perseus hardware under Linux and on any recent Unix, BSDs, OSX, Windows and, in general, on any POSIX compliant system where libusb1.0 and pthreads are available.
 
-4. There are a few SDR software available on Linux: if one wants to use Perseus as a communication receiver, 
-I strongly suggest to use Linrad, maybe at first you find it a little bit steep, 
-but it is worth the effort, believe me (http://www.sm5bsz.com/linuxdsp/usage/newco/newcomer.htm); 
-in case you need to access remotely and/or share Perseus over the Internet, 
+4. There are a few SDR software available on Linux: if one wants to use Perseus as a communication receiver,
+I strongly suggest to use Linrad, maybe at first you find it a little bit steep,
+but it is worth the effort, believe me (http://www.sm5bsz.com/linuxdsp/usage/newco/newcomer.htm);
+in case you need to access remotely and/or share Perseus over the Internet,
 use ghspdr3-alex (http://napan.ca/ghpsdr3/index.php/Main_Page).
 For other usages, GNU Radio is the preferred choice.
 
-5. for everything that concerns bugs and request of enhancements about libperseus-sdr, 
+5. for everything that concerns bugs and request of enhancements about libperseus-sdr,
 please open an issue on Github.
-In case of technical questions concerning ghpsdr3-alex and Linrad software, 
+In case of technical questions concerning ghpsdr3-alex and Linrad software,
 there are specific mailing lists on Google Groups.
 
 6. libperseus-sdr is used as base for gr-microtelecom GNU Radio, see https://github.com/amontefusco/gr-microtelecom.
-In order to build GNU Radio and gr-microtelecom, it is strongly advisable to use PyBOMBS 
-(http://gnuradio.org/redmine/projects/pybombs/wiki) 
+In order to build GNU Radio and gr-microtelecom, it is strongly advisable to use PyBOMBS
+(http://gnuradio.org/redmine/projects/pybombs/wiki)
 
 7. for an example on how to use this library on Windows, please see my ExtIO module in https://github.com/amontefusco/extio-iw0hdv
 
@@ -38,7 +38,7 @@ I am not working for Microtelecom and I never did so.
 
 
 
-#libperseus-sdr: how to build on Ubuntu
+## libperseus-sdr: how to build on Ubuntu
 
 Below you find the instructions for copy, compile, install, test; copy them verbatim in a shell (tested on U14.04).
 
@@ -83,6 +83,4 @@ perseus: perseus_exit(): poll_libusb_thread_flag=0
 
 Once you achieve the above output, connect the hardware and restart the program: now it should acquire samples form the radio (don't expect to hear any audio though, it is just storing samples in a file named ```perseusdata```).
 If it is the first time you are using liberseus-sdr on your system, a logout (not reboot) may be needed in order to get the USB configurations active.
- 
-
 
