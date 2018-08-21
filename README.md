@@ -1,4 +1,4 @@
-[![release](http://github-release-version.herokuapp.com/github/Microtelecom/libperseus-sdr/release.svg?style=flat)](https://github.com/Microtelecom/libperseus-sdr/releases/latest)
+[![release](https://github-basic-badges.herokuapp.com/release/Microtelecom/libperseus-sdr.svg)](https://github.com/Microtelecom/libperseus-sdr/releases/latest)
 
 # Perseus on Linux/Unix: libperseus-sdr
 
