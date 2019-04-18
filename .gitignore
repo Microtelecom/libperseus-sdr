@@ -20,6 +20,7 @@ config.status
 config.sub
 configure
 *.o
+*.a
 fpga_data.c
 install-sh
 *.la
