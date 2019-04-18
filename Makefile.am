@@ -21,11 +21,11 @@ endif
 if OS_WINDOWS
 #
 # flags you want to pass to the C compiler & linker
-# -mno-ms-bitfields needed in order to properly align fields in structures 
+# -mno-ms-bitfields needed in order to properly align fields in structures
 # http://stackoverflow.com/questions/7789668/why-would-the-size-of-a-packed-structure-be-different-on-linux-and-windows-when
 #
-AM_CFLAGS  = -Wall -O3 -DGIT_REVISION=\"@VERSION@\" -mno-ms-bitfields -I../libusb-1.0.last/ -DPTW32_STATIC_LIB -D__CLEANUP_C   
-AM_LDLIBS  = -ldl 
+AM_CFLAGS  = -Wall -O3 -DGIT_REVISION=\"@VERSION@\" -mno-ms-bitfields -I../libusb-1.0.last/ -DPTW32_STATIC_LIB -D__CLEANUP_C
+AM_LDLIBS  = -ldl
 AM_LDFLAGS = -ldl
 endif
 
@@ -40,7 +40,7 @@ nodist_libperseus_sdr_la_SOURCES = fpga_data.c
 
 hdrdir = $(includedir)
 
-#hdr_HEADERS = perseus-sdr.h perseusfx2.h perseus-in.h 
+#hdr_HEADERS = perseus-sdr.h perseusfx2.h perseus-in.h
 hdr_HEADERS = perseus-sdr.h
 
 # connvenience library
@@ -48,12 +48,6 @@ noinst_LIBRARIES = libperseus-sdr.a
 libperseus_sdr_a_SOURCES = $(libperseus_sdr_la_SOURCES)
 nodist_libperseus_sdr_a_SOURCES = fpga_data.c
 libperseus_sdr_a_CFLAGS = $(AM_CFLAGS)
-
-#
-# auxiliary data for udev daemon configuration
-# have to be distributed in tarball _and_ installed
-#
-dist_pkgdata_DATA = $(udev_DATA)
 
 #
 # FPGA images and scripts used for generate source code
@@ -73,30 +67,36 @@ dist_check_DATA =	$(srcdir)/perseus125k24v21.rbs \
 					$(srcdir)/perseus24v41_512.c
 
 #
-# Generate source file for FPGA code
-#
-CLEANFILES = fpga_data.c
-
-fpga_data.c: $(srcdir)/generate_fpga_code.sh $(dist_pkgdata_DATA) $(dist_check_DATA)
-	$(srcdir)/generate_fpga_code.sh $(srcdir)/ > $@
-
-
-#
 # UDEV rule file: to activate it do the following command:
 #
 # sudo groupadd perseususb
 # sudo usermod -a -G perseususb `whoami`
 # sudo udevadm control --reload-rules
 #
-udevrule_DATA = $(top_srcdir)/95-perseus.rules
-udevruledir = $(bindir)
-EXTRA_DIST = $(top_srcdir)/95-perseus.rules README.Windows $(top_srcdir)/build-aux/git-version-gen
+#
+# auxiliary data for udev daemon configuration
+# have to be distributed in tarball _and_ installed
+#
+if OS_LINUX
+	dist_pkgdata_DATA = $(udev_DATA)
 
-install-data-hook:
-	-cp $(bindir)/95-perseus.rules /etc/udev/rules.d/ ; groupadd perseususb ; echo $(INST_USER) ;usermod -a -G perseususb $(INST_USER) ; udevadm control --reload-rules
+	udevrule_DATA = $(top_srcdir)/95-perseus.rules
+	udevruledir = $(bindir)
+	EXTRA_DIST = $(top_srcdir)/95-perseus.rules README.Windows $(top_srcdir)/build-aux/git-version-gen
 
-uninstall-hook:
-	-rm /etc/udev/rules.d/95-perseus.rules ; groupdel perseususb ; udevadm control --reload-rules
+	install-data-hook:
+		-cp $(bindir)/95-perseus.rules /etc/udev/rules.d/ ; groupadd perseususb ; echo $(INST_USER) ;usermod -a -G perseususb $(INST_USER) ; udevadm control --reload-rules
 
+	uninstall-hook:
+		-rm /etc/udev/rules.d/95-perseus.rules ; groupdel perseususb ; udevadm control --reload-rules
+endif
+
+#
+# Generate source file for FPGA code
+#
+CLEANFILES = fpga_data.c
+
+fpga_data.c: $(srcdir)/generate_fpga_code.sh $(dist_pkgdata_DATA) $(dist_check_DATA)
+	$(srcdir)/generate_fpga_code.sh $(srcdir)/ > $@
 
 distdir = $(PACKAGE)-$(VERSION)
