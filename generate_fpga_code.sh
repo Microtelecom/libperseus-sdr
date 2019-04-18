@@ -52,7 +52,11 @@ N_FPGA=0
 for x in $RBS
 do
   # compute file length
-  file_size=$(stat -c%s "$x")
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    file_size=$(stat -f%k "$x")
+  else
+    file_size=$(stat -c%s "$x")
+  fi
 
   
   ### ->  # removes the shortest match from the beginning
@@ -123,7 +127,11 @@ echo -n "" > tmpfile
 
 for x in $RBS
 do
-  file_size=$(stat -c%s "$x")
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    file_size=$(stat -f%k "$x")
+  else
+    file_size=$(stat -c%s "$x")
+  fi
 
   file=${x##*/}
 
