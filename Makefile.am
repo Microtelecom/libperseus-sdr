@@ -18,6 +18,12 @@ AM_LDFLAGS =
 AM_LIBS    = -ldl
 endif
 
+if OS_MACOS
+AM_CFLAGS  =  -Wall -O3 -mssse3 -DGIT_REVISION=\"@VERSION@\"
+AM_LDFLAGS =
+AM_LIBS    = -ldl
+endif
+
 if OS_WINDOWS
 #
 # flags you want to pass to the C compiler & linker

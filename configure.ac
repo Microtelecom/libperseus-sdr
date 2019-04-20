@@ -70,8 +70,8 @@ case $backend in
 
   *linux*)
     AC_MSG_NOTICE([Platform LINUX: $host])
-	AC_DEFINE(OS_LINUX, 1, [Linux backend])
-	AC_SUBST(OS_LINUX)
+    AC_DEFINE(OS_LINUX, 1, [Linux backend])
+    AC_SUBST(OS_LINUX)
 
     XXX_PRFX_DEF="/usr/local"
     export XXX_PRFX_DEF
@@ -98,6 +98,8 @@ case $backend in
 
   *darwin*)
     AC_MSG_NOTICE([Platform MAC OSX: $host])
+    AC_DEFINE(OS_MACOS, 1, [macOS backend])
+    AC_SUBST(OS_MACOS)
     OSX_LDFLAGS=" -L/opt/local/lib"
     OSX_CFLAGS="-I/opt/local/include"
     LDFLAGS="$LDFLAGS $OSX_LDFLAGS"
@@ -126,18 +128,18 @@ case $backend in
     ;;
 
   *windows*)
-	AC_DEFINE(OS_WINDOWS, 1, [Windows backend])
-	AC_SUBST(OS_WINDOWS)
-	#LIBS=""
-	LTLDFLAGS="${LTLDFLAGS} -avoid-version -Wl,--add-stdcall-alias"
+    AC_DEFINE(OS_WINDOWS, 1, [Windows backend])
+    AC_SUBST(OS_WINDOWS)
+    #LIBS=""
+    LTLDFLAGS="${LTLDFLAGS} -avoid-version -Wl,--add-stdcall-alias"
 
-	#CFLAGS="$CFLAGS -I../libusb-1.0.last/"
+    #CFLAGS="$CFLAGS -I../libusb-1.0.last/"
     #CXXFLAGS="$CXXFLAGS -I../libusb-1.0.last/"
     LDFLAGS="$LDFLAGS -L/usr/lib/ -L/mingw32/bin/"
 
-	AC_CHECK_HEADERS([libusb-1.0/libusb.h])
+    AC_CHECK_HEADERS([libusb-1.0/libusb.h])
 
-	#### AC_CHECK_LIB([usb-1.0], [libusb_init])
+    #### AC_CHECK_LIB([usb-1.0], [libusb_init])
     AC_CHECK_LIB([usb-1.0], [libusb_init], [],
     [
          echo "Error! You need to have libusb-1.0 around."
@@ -149,9 +151,9 @@ case $backend in
     AC_CHECK_FUNCS([libusb_strerror], [],[])
 
 
-	AC_DEFINE([POLL_NFDS_TYPE],[unsigned int],[type of second poll() argument])
+    AC_DEFINE([POLL_NFDS_TYPE],[unsigned int],[type of second poll() argument])
     AC_MSG_NOTICE([Platform Windows])
-	;;
+    ;;
 
  *-*-*-*)
     AC_MSG_NOTICE([Platform unknown: $backend])
@@ -228,6 +230,7 @@ AC_SUBST(INST_USER)
 # defines macros to be used in Makefile.am
 #
 AM_CONDITIONAL(OS_LINUX, test "x$backend" = xlinux)
+AM_CONDITIONAL(OS_MACOS, test "x$backend" = xdarwin)
 AM_CONDITIONAL(OS_WINDOWS, test "x$backend" = xwindows)
 
 
