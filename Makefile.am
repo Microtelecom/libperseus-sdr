@@ -55,6 +55,30 @@ libperseus_sdr_a_SOURCES = $(libperseus_sdr_la_SOURCES)
 nodist_libperseus_sdr_a_SOURCES = fpga_data.c
 libperseus_sdr_a_CFLAGS = $(AM_CFLAGS)
 
+if OS_LINUX
+#
+# auxiliary data for udev daemon configuration
+# have to be distributed in tarball _and_ installed
+#
+dist_pkgdata_DATA = $(udev_DATA)
+#
+# UDEV rule file: to activate it do the following command:
+#
+# sudo groupadd perseususb
+# sudo usermod -a -G perseususb `whoami`
+# sudo udevadm control --reload-rules
+#
+udevrule_DATA = $(top_srcdir)/95-perseus.rules
+udevruledir = $(bindir)
+EXTRA_DIST = $(top_srcdir)/95-perseus.rules README.Windows $(top_srcdir)/build-aux/git-version-gen
+
+install-data-hook:
+	-cp $(bindir)/95-perseus.rules /etc/udev/rules.d/ ; groupadd perseususb ; echo $(INST_USER) ;usermod -a -G perseususb $(INST_USER) ; udevadm control --reload-rules
+
+uninstall-hook:
+	-rm /etc/udev/rules.d/95-perseus.rules ; groupdel perseususb ; udevadm control --reload-rules
+endif
+
 #
 # FPGA images and scripts used for generate source code
 # have to be distributed in tarball but _not_ installed
@@ -73,36 +97,16 @@ dist_check_DATA =	$(srcdir)/perseus125k24v21.rbs \
 					$(srcdir)/perseus24v41_512.c
 
 #
-# UDEV rule file: to activate it do the following command:
-#
-# sudo groupadd perseususb
-# sudo usermod -a -G perseususb `whoami`
-# sudo udevadm control --reload-rules
-#
-#
-# auxiliary data for udev daemon configuration
-# have to be distributed in tarball _and_ installed
-#
-if OS_LINUX
-	dist_pkgdata_DATA = $(udev_DATA)
-
-	udevrule_DATA = $(top_srcdir)/95-perseus.rules
-	udevruledir = $(bindir)
-	EXTRA_DIST = $(top_srcdir)/95-perseus.rules README.Windows $(top_srcdir)/build-aux/git-version-gen
-
-	install-data-hook:
-		-cp $(bindir)/95-perseus.rules /etc/udev/rules.d/ ; groupadd perseususb ; echo $(INST_USER) ;usermod -a -G perseususb $(INST_USER) ; udevadm control --reload-rules
-
-	uninstall-hook:
-		-rm /etc/udev/rules.d/95-perseus.rules ; groupdel perseususb ; udevadm control --reload-rules
-endif
-
-#
 # Generate source file for FPGA code
 #
 CLEANFILES = fpga_data.c
 
+if OS_LINUX
 fpga_data.c: $(srcdir)/generate_fpga_code.sh $(dist_pkgdata_DATA) $(dist_check_DATA)
 	$(srcdir)/generate_fpga_code.sh $(srcdir)/ > $@
+else
+fpga_data.c: $(srcdir)/generate_fpga_code.sh $(dist_check_DATA)
+	$(srcdir)/generate_fpga_code.sh $(srcdir)/ > $@
+endif
 
 distdir = $(PACKAGE)-$(VERSION)
