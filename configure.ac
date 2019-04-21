@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([libperseus_sdr], 
-        [m4_esyscmd([./build-aux/git-version-gen .tarball-version])], 
+AC_INIT([libperseus_sdr],
+        [m4_esyscmd([./build-aux/git-version-gen .tarball-version])],
         [andrew@montefusco.com])
 
 AM_INIT_AUTOMAKE
@@ -70,12 +70,12 @@ case $backend in
 
   *linux*)
     AC_MSG_NOTICE([Platform LINUX: $host])
-	AC_DEFINE(OS_LINUX, 1, [Linux backend])
-	AC_SUBST(OS_LINUX)
-	
+    AC_DEFINE(OS_LINUX, 1, [Linux backend])
+    AC_SUBST(OS_LINUX)
+
     XXX_PRFX_DEF="/usr/local"
-    export XXX_PRFX_DEF 
-	
+    export XXX_PRFX_DEF
+
     # Checks for libraries.
 
     AC_CHECK_LIB([pthread], [pthread_create])
@@ -98,6 +98,8 @@ case $backend in
 
   *darwin*)
     AC_MSG_NOTICE([Platform MAC OSX: $host])
+    AC_DEFINE(OS_MACOS, 1, [macOS backend])
+    AC_SUBST(OS_MACOS)
     OSX_LDFLAGS=" -L/opt/local/lib"
     OSX_CFLAGS="-I/opt/local/include"
     LDFLAGS="$LDFLAGS $OSX_LDFLAGS"
@@ -105,22 +107,39 @@ case $backend in
     export LDFLAGS
     export CFLAGS
     XXX_PRFX_DEF="/opt/local"
-    export XXX_PRFX_DEF 
+    export XXX_PRFX_DEF
+
+    # Checks for libraries.
+
+    AC_CHECK_LIB([pthread], [pthread_create])
+    AC_CHECK_LIB([usb-1.0], [libusb_init])
+
+    AC_CHECK_LIB([usb-1.0], [libusb_init], [],
+    [
+         echo "Error! You need to have libusb-1.0 around."
+         exit -1
+    ])
+    AC_CHECK_LIB([dl], [dlopen])
+
+    # check for specific functions
+    AC_CHECK_FUNCS([libusb_strerror], [],[])
+
+    AC_MSG_NOTICE([Platform MAC OSX])
     ;;
 
   *windows*)
-	AC_DEFINE(OS_WINDOWS, 1, [Windows backend])
-	AC_SUBST(OS_WINDOWS)
-	#LIBS=""
-	LTLDFLAGS="${LTLDFLAGS} -avoid-version -Wl,--add-stdcall-alias"
-	
-	#CFLAGS="$CFLAGS -I../libusb-1.0.last/"
+    AC_DEFINE(OS_WINDOWS, 1, [Windows backend])
+    AC_SUBST(OS_WINDOWS)
+    #LIBS=""
+    LTLDFLAGS="${LTLDFLAGS} -avoid-version -Wl,--add-stdcall-alias"
+
+    #CFLAGS="$CFLAGS -I../libusb-1.0.last/"
     #CXXFLAGS="$CXXFLAGS -I../libusb-1.0.last/"
     LDFLAGS="$LDFLAGS -L/usr/lib/ -L/mingw32/bin/"
 
-	AC_CHECK_HEADERS([libusb-1.0/libusb.h])
-	
-	#### AC_CHECK_LIB([usb-1.0], [libusb_init])
+    AC_CHECK_HEADERS([libusb-1.0/libusb.h])
+
+    #### AC_CHECK_LIB([usb-1.0], [libusb_init])
     AC_CHECK_LIB([usb-1.0], [libusb_init], [],
     [
          echo "Error! You need to have libusb-1.0 around."
@@ -130,12 +149,12 @@ case $backend in
 
     # check for specific functions
     AC_CHECK_FUNCS([libusb_strerror], [],[])
-	
-	
-	AC_DEFINE([POLL_NFDS_TYPE],[unsigned int],[type of second poll() argument])
+
+
+    AC_DEFINE([POLL_NFDS_TYPE],[unsigned int],[type of second poll() argument])
     AC_MSG_NOTICE([Platform Windows])
-	;;
-	
+    ;;
+
  *-*-*-*)
     AC_MSG_NOTICE([Platform unknown: $backend])
     ;;
@@ -164,7 +183,7 @@ case $build_cpu in
       AC_MSG_NOTICE([Platform: ix86 64 bit])
       LDFLAGS="$LDFLAGS -L/lib64 -L/usr/lib64"
       export LDFLAGS
-      AC_MSG_NOTICE([${LDFLAGS}])      
+      AC_MSG_NOTICE([${LDFLAGS}])
       # checks for platform dependent compiler optimizations
       AX_CHECK_COMPILE_FLAG(-ffast-math, SIMD_FLAGS="$SIMD_FLAGS -ffast-math", [])
       AX_CHECK_COMPILE_FLAG(-fopenmp, SIMD_FLAGS="$SIMD_FLAGS -fopenmp", [])
@@ -211,6 +230,7 @@ AC_SUBST(INST_USER)
 # defines macros to be used in Makefile.am
 #
 AM_CONDITIONAL(OS_LINUX, test "x$backend" = xlinux)
+AM_CONDITIONAL(OS_MACOS, test "x$backend" = xdarwin)
 AM_CONDITIONAL(OS_WINDOWS, test "x$backend" = xwindows)
 
 
@@ -271,5 +291,3 @@ Now type 'make @<:@<target>@:>@'
 ${corw}
 
 -----------------------------------------------------"
-
-
