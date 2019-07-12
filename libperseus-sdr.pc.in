@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: Microtelecom Perseus SDR Library
+Description: C Utility Library
+URL: https://github.com/Microtelecom/libperseus-sdr
+Version: @VERSION@
+#Requires: <dependencies>
+Libs: -L${libdir} -lperseus-sdr
+Cflags: -I${includedir}/ -I/usr/include/libusb-1.0

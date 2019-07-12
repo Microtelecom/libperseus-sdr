@@ -265,6 +265,7 @@ AC_CHECK_FUNCS([gettimeofday])
 
 AC_CONFIG_FILES([Makefile
 				 examples/Makefile
+				 libperseus-sdr.pc
 ])
 
 AC_OUTPUT

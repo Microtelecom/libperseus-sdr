@@ -110,3 +110,10 @@ fpga_data.c: $(srcdir)/generate_fpga_code.sh $(dist_check_DATA)
 endif
 
 distdir = $(PACKAGE)-$(VERSION)
+
+## Install the generated pkg-config file (.pc) into the expected location for
+## architecture-dependent package configuration information.  Occasionally,
+## pkg-config files are also used for architecture-independent data packages,
+## in which case the correct install location would be $(datadir)/pkgconfig.
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libperseus-sdr.pc
