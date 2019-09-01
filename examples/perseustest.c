@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <errno.h>
 #if defined _WIN32
 #define	sleep(x) Sleep((x)*1000)
 #else
@@ -285,7 +286,7 @@ int main(int argc, char **argv)
 			break;
 	}
 
-    perseus_set_attenuator_in_db(descr, 33); // Bad value !!!
+	perseus_set_attenuator_in_db(descr, 33); // Bad value !!!
 
 	if (no_ta == 0) {
 		perseus_set_attenuator_n(descr, 0);
@@ -317,9 +318,8 @@ int main(int argc, char **argv)
 	if (strcmp(out_file_name, "-")) {
 		fout = fopen(out_file_name,"wb");
 		if (!fout) {
-			fprintf(stderr, "Can't open output file\n");
-			perseus_close(descr);
-			perseus_exit();
+			fprintf(stderr, "Can't open output file (%s)\n", strerror(errno));
+			fout = 0;
 		}
 	}
 	
@@ -364,7 +364,7 @@ int main(int argc, char **argv)
 	perseus_stop_async_input(descr);
 
 	// We can safely close the output file handle here. Acquisition has stopped.
-	fclose(fout);
+	if (fout) fclose(fout);
 
 main_cleanup:
 
@@ -429,7 +429,7 @@ int user_data_callback_c_u(void *buf, int buf_size, void *extra)
 		s.q3 = *samplebuf++;
 		s.q4 = *samplebuf++;
 
-		fwrite(&s.iq, 1, sizeof(iq_sample), fout);
+		if (fout) fwrite(&s.iq, 1, sizeof(iq_sample), fout);
 	}
     return 0;
 }
@@ -448,7 +448,7 @@ int user_data_callback_c_f(void *buf, int buf_size, void *extra)
 	// of writing data at a rate of at least 16 MB/s (almost 1 GB/min!)
 
 	uint8_t	*samplebuf 	= (uint8_t*)buf;
-	FILE *fout 			= (FILE*)extra;
+	FILE *fout 		= (FILE*)extra;
 	int nSamples 		= buf_size/6;
 	int k;
 	iq_sample s;
@@ -471,7 +471,7 @@ int user_data_callback_c_f(void *buf, int buf_size, void *extra)
 		iq_f[0] = (float)(s.iq.i) / (INT_MAX - 256);
 		iq_f[1] = (float)(s.iq.q) / (INT_MAX - 256);
 		
-		fwrite(iq_f, 2, sizeof(float), fout);
+		if (fout) fwrite(iq_f, 2, sizeof(float), fout);
 	}
     return 0;
 }
