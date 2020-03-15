@@ -285,10 +285,9 @@ int main(int argc, char **argv)
 			perseus_set_attenuator_n(descr, (int)(atten_db / -10));
 			break;
 	}
-
-	perseus_set_attenuator_in_db(descr, 33); // Bad value !!!
-
 	if (no_ta == 0) {
+		perseus_set_attenuator_in_db(descr, 33); // Bad value !!!
+
 		perseus_set_attenuator_n(descr, 0);
 		sleep(1);
 		perseus_set_attenuator_n(descr, 1);
@@ -349,14 +348,20 @@ int main(int argc, char **argv)
 	
 	fprintf(stderr, "Collecting input samples... ");
 
-	// We wait a 10 s time interval.
-	// The user data callback we supplied to perseus_start_async_input 
-	// is being called meanwhile.
-	for (k=0;k<test_time;k++) {
-		fprintf(stderr, ".");
-		sleep(1);
+	// wait indefinitely in case test_time is 0
+	// useful when we are not testing but acting as a source
+	// for another command line utility
+	if (test_time == 0) {
+		while (!sleep(100)) ;
+	} else {
+		// We wait a 10 s time interval.
+		// The user data callback we supplied to perseus_start_async_input
+		// is being called meanwhile.
+		for (k=0;k<test_time;k++) {
+			fprintf(stderr, ".");
+			sleep(1);
+		}
 	}
-
 	fprintf(stderr, "\ndone\n");
 	
 	// We stop the acquisition...
