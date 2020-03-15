@@ -79,6 +79,9 @@ void print_usage ()
 					 "point instead of 24 bits unsigned int.\n");
 	fprintf (stderr, "-F ............ FIFO command channel name\n");
 	fprintf (stderr, "-u ............ attenuator value [-10 -20 -30 db]\n");
+	fprintf (stderr, "-x ............ activate the ADC dithering\n");
+	fprintf (stderr, "-m ............ activate the preamp\n");
+	fprintf (stderr, "-w ............ disable input analog filters\n");
 	fprintf (stderr, "-h ............ this help\n");
 }
 
@@ -105,6 +108,9 @@ int main(int argc, char **argv)
 	char fifo_name[128] = "";
 	int atten_db = - 30;
 	int fp_output = 0;
+	int input_filter = 1;
+	int adc_preamp = 0;
+	int adc_dither = 0;
 
 	for (i=0; i < argc; ++i) {
 		dbgprintf (3,"%d: %s\n", i, argv[i]);
@@ -154,18 +160,27 @@ int main(int argc, char **argv)
 			fprintf (stderr, "**************** Attenuator: %d\n", atten_db);
 		}
 		if (!strcmp(argv[i],"-h")) {
-		    print_usage ();
+			print_usage ();
 			exit (255);
 		}
 		if (!strcmp(argv[i],"-p")) {
 			fp_output = 1;
-		}		
+		}
+		if (!strcmp(argv[i],"-x")) {
+			adc_dither = 1;
+		}
+		if (!strcmp(argv[i],"-m")) {
+			adc_preamp = 1;
+		}
+		if (!strcmp(argv[i],"-w")) {
+			input_filter = 0;
+		}
 	}
 	
 	// Set debug info dumped to stderr to the maximum verbose level
 	perseus_set_debug(dbg_lvl);
 	
-    fprintf (stderr, "Revision: %s\n", git_revision);
+	fprintf (stderr, "Revision: %s\n", git_revision);
 	fprintf (stderr, "SAMPLE RATE: %d\n", sr);
 	fprintf (stderr, "NBUF: %d BUF SIZE: %d TOTAL BUFFER LENGTH: %d\n", nb, bs, nb*bs);
 
@@ -299,19 +314,24 @@ int main(int argc, char **argv)
 		perseus_set_attenuator_n(descr, 0);
 		sleep(1);
 	}
-	// Enable ADC Dither, Disable ADC Preamp
-	perseus_set_adc(descr, true, false);
+	// Enable ADC Dither, ADC Preamp according to cmd line options
+	perseus_set_adc(descr,
+			adc_dither == 1 ? true: false,
+			adc_preamp == 1 ? true: false);
 
-	// Do the same cycling test with the WB front panel led.
-	// Enable preselection filters (WB_MODE Off)
-	perseus_set_ddc_center_freq(descr, freq, 1);
-	sleep(1);
-	// Disable preselection filters (WB_MODE On)
-	perseus_set_ddc_center_freq(descr, freq, 0);
-	sleep(1);
-	// Re-enable preselection filters (WB_MODE Off)
-	perseus_set_ddc_center_freq(descr, freq, 1);
-
+	if (no_ta == 0) {
+		// Do the same cycling test with the WB front panel led.
+		// Enable preselection filters (WB_MODE Off)
+		perseus_set_ddc_center_freq(descr, freq, 1);
+		sleep(1);
+		// Disable preselection filters (WB_MODE On)
+		perseus_set_ddc_center_freq(descr, freq, 0);
+		sleep(1);
+		// Re-enable preselection filters (WB_MODE as per cli option)
+		perseus_set_ddc_center_freq(descr, freq, input_filter);
+	} else {
+		perseus_set_ddc_center_freq(descr, freq, input_filter);
+	}
 	// We open a file for binary output.
 	// IQ samples will be saved in binary format to this file
 	if (strcmp(out_file_name, "-")) {
