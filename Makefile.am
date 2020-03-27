@@ -70,7 +70,7 @@ dist_pkgdata_DATA = $(udev_DATA)
 #
 udevrule_DATA = $(top_srcdir)/95-perseus.rules
 udevruledir = $(bindir)
-EXTRA_DIST = $(top_srcdir)/95-perseus.rules README.Windows $(top_srcdir)/build-aux/git-version-gen
+EXTRA_DIST = $(top_srcdir)/95-perseus.rules README.Windows $(top_srcdir)/build-aux/git-version-gen fpga_data.c
 
 install-data-hook:
 	-cp $(bindir)/95-perseus.rules /etc/udev/rules.d/ ; groupadd perseususb ; echo $(INST_USER) ;usermod -a -G perseususb $(INST_USER) ; udevadm control --reload-rules
@@ -80,21 +80,12 @@ uninstall-hook:
 endif
 
 #
-# FPGA images and scripts used for generate source code
+# Cypress boot loader firmware image
 # have to be distributed in tarball but _not_ installed
+# .RBS FPGA images are not distributed in tarball, the equivalent C code is (in fpga_data.c)
 #
-dist_check_DATA =	$(srcdir)/perseus125k24v21.rbs \
-					$(srcdir)/perseus192k24v31.rbs \
-					$(srcdir)/perseus1m24v21.rbs   \
-					$(srcdir)/perseus250k24v21.rbs \
-					$(srcdir)/perseus2m24v21.rbs   \
-					$(srcdir)/perseus48k24v31.rbs  \
-					$(srcdir)/perseus500k24v21.rbs \
-					$(srcdir)/perseus95k24v31.rbs  \
-					$(srcdir)/perseus96k24v31.rbs  \
-					$(srcdir)/perseus1d6m24v21.rbs \
-					$(srcdir)/generate_fpga_code.sh\
-					$(srcdir)/perseus24v41_512.c
+dist_check_DATA =	$(srcdir)/perseus24v41_512.c
+
 
 #
 # Generate source file for FPGA code
@@ -102,11 +93,11 @@ dist_check_DATA =	$(srcdir)/perseus125k24v21.rbs \
 CLEANFILES = fpga_data.c
 
 if OS_LINUX
-fpga_data.c: $(srcdir)/generate_fpga_code.sh $(dist_pkgdata_DATA) $(dist_check_DATA)
-	$(srcdir)/generate_fpga_code.sh $(srcdir)/ > $@
+fpga_data.c: $(dist_pkgdata_DATA)
+	@[ -f fpga_data.c ] || $(srcdir)/generate_fpga_code.sh $(srcdir)/ > $@
 else
-fpga_data.c: $(srcdir)/generate_fpga_code.sh $(dist_check_DATA)
-	$(srcdir)/generate_fpga_code.sh $(srcdir)/ > $@
+fpga_data.c:
+	@[ -f fpga_data.c ] || $(srcdir)/generate_fpga_code.sh $(srcdir)/ > $@
 endif
 
 distdir = $(PACKAGE)-$(VERSION)
