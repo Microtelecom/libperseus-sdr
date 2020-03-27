@@ -4,25 +4,25 @@
 
 ## Build instructions are below, for more detailed instructions, please read the README and README.Windows files.
 
-1. This library was originally written by Nico Palermo, Microtelecom's founder and owner,
+1. This library was originally written by Nico Palermo, Microtelecom's founder and owner.
 
 2. Albeit the libperseus-sdr library was originally targeted to Linux, it is now suitable for both Linux/Unix systems and Windows.
-Please note though, that Microtelecom produce and supports a Windows only SDRDK, that one can use
+Please note though, that Microtelecom produces and supports a Windows only SDRDK, that one can use
 accepting the License Agreement (see Microtelecom site, http://microtelecom.it/sdrdk/sdrdk.php).
-In any case, the library described here (libperseus-sdr) is not suitable in order to run original Perseus SDR application from Microtelecom under Linux (neither using WINE).
+In any case, the library described here (libperseus-sdr) is not suitable to run the original Perseus SDR application from Microtelecom under Linux (neither using WINE).
 By the way, I don't know whether just *trying* to do that, one breaks the Microtelecom's licence, so be careful.
 
 3. For which use is libperseus-sdr (very) good ?
-It allows to get control the Perseus hardware under Linux and on any recent Unix, BSDs, OSX, Windows and, in general, on any POSIX compliant system where libusb1.0 and pthreads are available.
+It allows us to get control the Perseus hardware under Linux and on any recent Unix, BSDs, OSX, Windows and, in general, on any POSIX compliant system where libusb1.0 and pthreads are available.
 
 4. There are a few SDR software available on Linux: if one wants to use Perseus as a communication receiver,
 I strongly suggest to use Linrad, maybe at first you find it a little bit steep,
 but it is worth the effort, believe me (http://www.sm5bsz.com/linuxdsp/usage/newco/newcomer.htm);
 in case you need to access remotely and/or share Perseus over the Internet,
-use ghspdr3-alex (http://napan.ca/ghpsdr3/index.php/Main_Page).
+use OpenWebRx (https://github.com/jketterl/openwebrx).
 For other usages, GNU Radio is the preferred choice.
 
-5. for everything that concerns bugs and request of enhancements about libperseus-sdr,
+5. For everything that concerns bugs and request of enhancements about libperseus-sdr,
 please open an issue on Github.
 In case of technical questions concerning ghpsdr3-alex and Linrad software,
 there are specific mailing lists on Google Groups.
@@ -31,9 +31,11 @@ there are specific mailing lists on Google Groups.
 In order to build GNU Radio and gr-microtelecom, it is strongly advisable to use PyBOMBS
 (http://gnuradio.org/redmine/projects/pybombs/wiki)
 
-7. for an example on how to use this library on Windows, please see my ExtIO module in https://github.com/amontefusco/extio-iw0hdv
+7. For an example on how to use this library on Windows, please see my ExtIO module in https://github.com/amontefusco/extio-iw0hdv
 
-8. I am only the maintainer, as passionate SDR user and OM.
+8. On my own web site there is a page where updates of libpersues-sdr integrations are posted. See https://www.montefusco.com/perseus/
+
+9. I am only the maintainer, as passionate SDR user and OM.
 I am not working for Microtelecom and I never did so.
 
 
@@ -45,9 +47,9 @@ Below you find the instructions for copy, compile, install, test; copy them verb
 ```
 sudo apt-get install libusb-1.0-0-dev
 cd /tmp
-wget https://github.com/Microtelecom/libperseus-sdr/releases/download/v0.7.5/libperseus_sdr-0.7.5.tar.gz
-tar -zxvf libperseus_sdr-0.7.5.tar.gz
-cd libperseus_sdr-0.7.5/
+wget https://github.com/Microtelecom/libperseus-sdr/releases/download/v0.8.2/libperseus_sdr-0.8.2.tar.gz
+tar -zxvf libperseus_sdr-0.8.2.tar.gz
+cd libperseus_sdr-0.8.2/
 ./configure
 make
 sudo make install
@@ -58,13 +60,13 @@ perseustest
 If you prefer to run it without a full installation
 
 ```
-./perseustest
+./examples/perseustest
 ```
 
 In either case, the output should be as follows (supposing the hardware for now is detached):
 
 ```
-Revision: 0.7.5
+Revision: 0.8.2
 SAMPLE RATE: 95000
 NBUF: 6 BUF SIZE: 1024 TOTAL BUFFER LENGTH: 6144
 perseus: perseus_init()
